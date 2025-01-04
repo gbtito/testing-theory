@@ -1,0 +1,704 @@
+\section{Soundness}
+\label{sec:proof-soundness}
+
+%\onecolumn
+
+
+%% \begin{figure}
+%%  \hrulefill
+%%   $$
+%%   \begin{array}{l}%*{c@{\hskip 2em}l}
+%%     \msetnow
+%%     \\[1pt]
+%%     \begin{prooftree}
+%%       \good{\client}
+%%       \justifies
+%%       \mustset{ X }{r}
+%%     \end{prooftree}
+%%     \\[10pt]
+%%     \msetstep
+%%     \\[1pt]
+%%     \begin{prooftree}
+%%       \begin{array}{lr}
+%%         \lnot \good{\client} & \forall X' \wehavethat X \st{ \tau } X' %\text{ and }  X'
+%%         \implies \mustset{X'}{\client}\\
+%%       \forall\ \serverA \in X \wehavethat \csys{ \serverA }{ \client } \st{\tau} & \forall \client' \wehavethat \client \st{ \tau } \client' \implies \mustset{X}{\client'}
+%%       \\
+%%       \multicolumn{2}{r}{        \forall X', \mu \in \Actfin  %% p \stable
+%%         \wehavethat X \wt{\co{\mu}} X' %\text{ and }  X'
+%%         \text{ and }  \client \st{\mu} \client' \imply %% \der{p}{\co{\aa}}
+%%         \mustset{ X' }{ \client'}}
+%%       \end{array}
+%%       \justifies
+%%       \mustset{ X }{ \client }
+%%     \end{prooftree}
+%%   \end{array}
+%%   $$
+%%   \vspace{-10pt}
+%%   \caption{Rules to define inductively the predicate $\opMustset$.}
+%% %    (\coqSou{must__set}).}
+%%   \label{fig:rules-mustset}
+%% \hrulefill
+%% \end{figure}
+
+
+\label{sec:bhv-soundness}\label{sec:soundness-bhv}
+
+
+%% To prove the converse of \rprop{bhv-completeness}, a naïve proof does not work:
+%% suppose given servers $\server$ and $\serverB$, assume $\serverA \asleq \serverB$.
+%% We need to prove that, for every client $\client$, if
+%% $\musti{\server}{\client}$ then $\musti{\serverA}{\client}$.
+%% The reasonable first attempt consisting in proceeding by induction on
+%% $\musti{\server}{\client}$ fails, as demonstrated by the following example.
+
+%% \begin{example}
+%%   \label{ex:must-set-is-helpful}
+%% %  Recall the state $\server$ of \rexa{set-transitions}
+%%   Consider the two servers $\server = \tau.(\co{\aa} \Par \co{b}) \extc
+%%   \tau.(\co{\aa} \Par \co{c})$ and $\serverB = \co{\aa} \Par (\tau.\co{b} \extc
+%%   \tau.\co{c})$ of \req{mailbox-hoisting}.
+%%   Fix a client $\client$ such that $\musti{\serverA}{\client}$.
+%%   Rule induction %on this fact
+%%   yields the following inductive hypothesis:
+%%   %on $\musti{\serverA}{\client}   tells us the
+%%   \begin{center}
+%%     $\forall \serverA', \serverB' \suchthat\;
+%%     \csys{\serverA}{\client} \st{\tau} \csys{\serverA'}{\client'} \;\land\;$
+%%     $\serverA' \asleq \serverB' \;\Rightarrow\; \musti{\serverB'}{\client'}$.
+%%   \end{center}
+%%   %% Showing that $\serverA \asleq \serverB$ implies $\serverA \testleqS \serverB$,
+%%   %% \ie the soundness direction,
+%%   %would among us to pick a client $\client$ such that $\musti{\serverA}{\client}$
+%%   %and prove $\musti{\serverB}{\client}$.
+%%   In the proof of
+%%   $\musti{\serverB}{\client}$ we have to consider the case where there
+%%   is a communication between $\serverB$ and
+%%   $\client$ such that, for instance, $\serverB \st{\co{\aa}}
+%%   \tau.\co{b} \extc \tau.\co{c}$ and $\client \st{\aa}
+%%   \client'$.  In that case, we need to show that $ \musti{ \tau.\co{b}
+%%     \extc \tau.\co{c}
+%%   }{\client'}$. Ideally, we would like to use the inductive
+%%   hypothesis. This requires us to exhibit a $\server'$ such that $
+%%   \csys{\server}{\client} \st{\tau} \csys{\server'}{\client'}$ and $
+%%   \server' \bhvleqtwo \tau.\co{b} \extc \tau.\co{c}$.
+%% %\ilacom{What is $\accleqset$? I see now it is defined below.}
+%%   However, note that there is no way to derive
+%%   $\csys{\server}{\client} \st{\tau} \csys{\server'}{\client'}
+%%   $, because $\server
+%%   \Nst{\co{\aa}}$.  The inductive hypothesis thus cannot be applied,
+%%   and the naïve proof does not go through.\hfill$\qed$
+%%   %%% RATIONALE
+%%   %% Note that, as~$\opMusti$ is defined on strong transition relations,
+%%   %% the inductive hypothesis works \textit{one transition at a time}.
+%% \end{example}
+%% \noindent
+%% This example suggests that defining an auxiliary predicate~$\opMustset$ in some sense
+%% equivalent to~$\opMusti$, but that uses explicitly {\em weak} outputs
+%% of servers, should be enough to prove that~$\asleq$ is sound wrt~$\testleqS$.
+%% Unfortunately, though, there is an additional nuisance to tackle: server
+%% non-determinism.
+%% \begin{example}
+%%   %  Following the intuition outlined thus far,
+%%   %% Observe, though, that $ \server \wt{ \co{\aa}}$. This intuition
+%%   %% motivates the use of the weak transition $X \wt{\co{\mu}} X'$ in \rfig{rules-mustset}.
+%%   %% need for relying on weak transitions instead of strong transitions.
+%%   %% To show why the use of sets is necessary,
+%%   Assume that we defined the predicate~$\opMusti$
+%%   using weak transitions on the server side for the case of
+%%   communications. Recall the argument %unfolded
+%%   put forward in the previous example.
+%%   The inductive hypothesis now becomes the following:
+%%   \begin{center}
+%%     For every $\serverA', \serverB', \mu$ such that
+%%     $\serverA \wt{\mu} \serverA'$ and $\client \st{\mu} \client'$,
+%%     $\serverA' \asleq \serverB'$ implies $\musti{\serverB'}{\client'}$.
+%%   \end{center}
+%%   To use the inductive hypothesis we have to choose a $\server'$ such
+%%   that $\server \wt{\co{\aa}} \server'$ and $\server' \asleq
+%%   \tau.\co{b} \extc \tau.\co{c}$. This is still not enough for the
+%%   entire proof to go through, because (modulo further $\tau$-moves)
+%%   the particular $\server'$ we pick has to be related also to either
+%%   $\co{b}$ or $\co{c}$. It is not possible to find such a
+%%     $\server'$, because
+%%     the two possible candidates
+%%   %choose such a $\server'$, because the particular $\server'$ we can
+%%   %choose
+%%   are either $\co{b}$
+%%   or $\co{c}$; neither of which can satisfy $\server' \asleq
+%%   \tau.\co{b} \extc \tau.\co{c}$, as the right-hand side has not
+%%   committed to a branch yet.
+
+%%   %% the server $\tau.\co{b} \extc \tau.\co{c}$ has
+%%   %% not commited yet to any branch.%  did not already decide which
+%%   %% %  branch it would take.
+%%   %% \leo{I think I understand by it's not super clear: is the following correct?
+%%   %%   ... the particular $\server'$ we choose will either correspond to $\co{a} \Par \co{b}$
+%%   %%   or to $\co{a} \Par \co{c}$; neither of which can satisfy $\server' \asleq
+%%   %% \tau.\co{b} \extc \tau.\co{c}$, as the right-hand side has not commited to a
+%%   %% branch yet.}
+
+%%   If instead of a single state $\server$ in the novel definition of
+%%   $\opMusti$ we used a set of %servers
+%%   states and a suitable
+%%   transition relation, the choice of either $\co{b}$ or $\co{c}$ will be
+%%   suitably delayed. It suffices for instance to have the following states and transitions:
+%%   %$X = \set{\co{b}, \co{c}}$ we have that
+%%   $\set{\serverA} \wt{\co{\aa}} \set{\co{b}, \co{c}}.$\hfill$\qed$
+%%   %and
+%% %  $X \asleqset \tau.\co{b} \extc \tau.\co{c}$.
+%% %  , for instance $X' =
+%% %  \set{\co{b}, \co{c}}$
+%%   %% and we defined an LTS such that $X \wt{
+%%   %%   \co{\mu}} X'$ then in the proof the choice of either $\co{b}$ or $
+%%   %% \co{c}$ would be suitably delayed.
+%%   %% %In contrary, the use of sets allows to
+%%   %% delay this choice. Indeed, by taking
+%%   %% $X = \set{\co{b}, \co{c}}$ we have that $\set{\serverA} \wt{\co{\aa}} X$ and
+%%   %% $X \asleqset \tau.\co{b} \extc \tau.\co{c}$.\hfill$\qed$
+%% \end{example}
+
+%% Now that we have motivated the main intuitions behind the definition of our
+%% novel auxiliary predicate~$\opMustset$, we proceed with the formal definitions.
+
+%% {\bfseries The LTS of sets.}
+%% Let~$\pparts{ Z }$ be the set of  {\em non-empty} parts of~$Z$.
+%% Given an LTS~$\lts{\States}{ L }{ \st{} }$, we define
+%% for every $ X \in \pparts{ \States } $ and every $\alpha$ the set
+%% $D{(\alpha, X)} = \setof{ \stateA }{ \exists \state \in X \suchthat \state \st{\alpha} \stateA }$
+%% \pl{and $\WD{(\alpha, X)} = \setof{ \stateA }{ \exists \state \in X \suchthat \state \wt{\alpha} \stateA }$}.
+%% Essentially we lift the standard notion of state derivative to sets of states.
+%% We construct the LTS $\lts{\pparts{ \States }}{ \Acttau }{ \st{} }$
+%% by letting $ X \st{ \alpha } D{(\alpha, X)}$ whenever $D{(\alpha, X)} \neq \emptyset$.
+%% \pl{Similarly, we have $X \wt{ \alpha } \WD{(\alpha, X)}$ whenever $\WD{(\alpha, X)} \neq \emptyset$}.
+%% %, \ie whenever
+%% %and there exists a $\server \in X$ such that $\server \st{ \alpha }$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\leaveout{
+\begin{example}
+  \label{ex:set-transitions}
+    Let $\server = \tau.(\co{\aa} \Par \co{b}) \extc \tau.(\co{\aa} \Par \co{c})$.
+    We have
+    $$
+    \begin{array}{l}
+      \set{ \server } \st{ \tau} \set{ \co{\aa} \Par \co{b} }\\
+      \set{ \server } \st{ \tau} \set{ \co{\aa} \Par \co{c} }\\
+      \set{ \server } \st{ \tau} \set{ \co{\aa} \Par \co{b}, \co{\aa} \Par \co{c} }
+      \end{array}
+    $$
+    \hfill$\qed$
+  \end{example}
+  In our arguments we will reason on the fact for a given $X \in \pparts{ \States }$
+  all the states $p \in X$ must pass a given client $r$.
+  The predicate $\opMusti$ is not directly usable to this aim, because
+  in general $ \musti{X}{\client} $ does not imply that $\forall
+  \server \musti{X}{\client}$. We show this in the next example.
+  \begin{example}
+    \label{ex:musti-not-directly-liftable-LTS-of-sets}
+    Let $X = \set{\Nil, \co{\aa}}$ and $\client = \aa.\Unit$.
+    We have that $\musti{X}{\client}$, because $X \st{\co{\aa}}$ and $X
+    \st{\co{\aa}} Y$ implies that $Y = \set{ \Nil }$  and
+    $$
+    \begin{prooftree}
+      {\good{\Unit}}
+      \justifies
+          {\begin{prooftree}
+              \musti{\Nil}{\Unit}
+              \justifies
+                  { \musti{ \set{\Nil, \co{\aa}} }{\aa.\Unit} }
+            \end{prooftree}%
+          }
+    \end{prooftree}
+    $$
+    On the other hand $\Nil \in X$  and $\Nmusti{\Nil}{\client}
+    $.\hfill$\qed$
+  \end{example}
+%%   It seems natural that a server $\server$ and the singleton
+%%   $\set{\server}$ be interchangeable when reasoning on~$\opMusti$,
+%%   \ie $\musti{\server}{\client}$ if and only if
+%%   $\musti{\set{\server}}{\client}$ for every~$\client$.
+
+%% \TODO{If this is true, then there is the more general question:
+%%   is it true that for every $X\in\pparts{A}$ .
+%%   ($\forall \server \in X . \musti{\server}{\client}$) if and only if $\musti{X}{ \client}$ ?
+\noindent
+
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Let $\opMustset$ be defined via the rules in \rfig{rules-mustset}.
+%% This predicate let us reason on~$\opMusti$ via sets of servers,
+%% in the following sense.
+%% \begin{lemma}
+%%   \label{lem:musti-if-mustset-helper}
+%%   For every LTS $\genlts_A, \genlts_B$ and every
+%%   $X \in \pparts{\StatesA}$, we have that
+%%   $\mustset{X}{\client}$ if and only if for every $\serverA \in X
+%%   \wehavethat \musti{\serverA}{\client}$.
+%% \end{lemma}
+%%%%% HIDDEN BECAUSE PERHAPS THE LEMMA IS NOT WORTH BEING PRESENTED
+%%%%%%%%%%%%%%%%%%%%%% DO NOT EREASE
+%%%%%%%%%%%%%%%%%%%%%% DO NOT EREASE
+%% \begin{proof}
+%% We proceed by rule induction on the derivation of the hypothesis $\mustset{X}{\client}$.
+
+%% In the base case, $\mustset{X}{\client}$ has been derived using the rule \msetnow
+%% such that $\good{\client}$ and $\musti{\server}{\client}$ follows from
+%% an application of \mnow. %
+%% %
+%% %
+%% In the inductive case $\mustset{X}{\client}$ has been derived using
+%% rule \msetstep, and thus
+%% \begin{enumerate}[(a)]
+%% \item\label{musti-if-mustset-helper-h0} $\lnot \good{\client}$,
+%% \item\label{musti-if-mustset-helper-h1} for every $\serverA \in X$ we have that
+%%   $\csys{ \serverA }{ \client } \st{\tau}$,
+%% \item\label{musti-if-mustset-helper-h2}
+%%   $\forall X' \wehavethat X \st{ \tau } X' \neq \emptyset \implies \mustset{X'}{\client}$
+%% \item\label{musti-if-mustset-helper-h3}
+%%   $\forall \client' \wehavethat \client \st{ \tau } \client' \implies \mustset{X}{\client'}$
+%% \item\label{musti-if-mustset-helper-h4}
+%%   $\forall X', \mu \in \Actfin  \wehavethat X \wt{\co{\mu}} X' \neq \emptyset$
+%%   and $\client \st{\mu} \client'$ imply that $\mustset{ X' }{ \client'}$
+%% \end{enumerate}
+
+%% Pick a $\server \in X$.
+%% Since $\lnot \good{\client}$ and thanks to
+%% (\ref{musti-if-mustset-helper-h1}), to show
+%% $\musti{\serverA}{\client}$ we can apply the rule \mstep,
+%% if we prove that
+%% %%\begin{enumerate}[(i)]
+%% %  \item $\lnot \good{\client}$,
+%% %\item $\csys{ \serverA }{ \client } \st{\tau}$, and that
+%% %%\item
+%% \begin{equation*}
+%%   \forall \serverA',
+%%   \client' \wehavethat \csys{\serverA}{\client} \st{\tau}
+%%   \csys{\serverA'}{\client'} \text{ imply that }\mustset{X'}{\client'}.
+%%   \end{equation*}
+%% %%\end{enumerate}
+%% %The first requirement is a direct consequence of (\ref{musti-if-mustset-helper-h0}).
+%% %% The first requirement follows from the fact that $\serverA \in X$ together with
+%% %% (\ref{musti-if-mustset-helper-h1}).
+%% %%To show the third requirement
+%% Fix a silent transition $\csys{\serverA}{\client} \st{\tau} \csys{\serverA'}{\client'}$. We proceed by case analysis on how the transition
+%% $\csys{\serverA}{\client} \st{\tau} \csys{\serverA'}{\client'}$ has been derived.
+%% There are three cases, either the transition has been derived. There are the three following cases.
+%% \begin{enumerate}[(1)]
+%% \item[\stauserver]
+%%   a $\tau$-transition performed by the server such that $\serverA \st{\tau} \serverA'$
+%%   and that $\client' = \client$, or
+%% \item[\stauclient]
+%%   a $\tau$-transition performed by the client such that $\client \st{\tau} \client'$
+%%   and that $\server' = \server$, or
+%% \item[\scom]
+%%   an interaction between the server $\serverA$ and the client $\client$ such that
+%%   $\serverA \st{\mu} \serverA'$ and $\client \st{\co{\mu}} \client'$.
+%% \end{enumerate}
+
+%% \TODO{What does the inductive hypothesis state ?}
+
+%% In case \stauserver we apply the inductive hypothesis. To do so we
+%% have to provide a set $X'$ such that $\serverA' \in X'$ and $X \st{\tau} X'$.
+%% We take $X' = \setof{\hat{\server}}{\serverA \st{\tau} \hat{\server}}$.
+%% As $\serverA \st{\tau} \serverA'$, it must be the case that $\serverA' \in X'$ and we are done.
+%% In case \stauclient, then conclusion is a direct consequence of the inductive hypothesis.
+%% The argument for case \scom is similar to the one for case
+%% \stauserver, the only difference being that we take $X' = \setof{\hat{\server}}{\serverA \st{\mu} \hat{\server}}$.
+%% \end{proof}
+%%%%%%%%%%%%%%%%%%%%%% DO NOT EREASE
+%%%%%%%%%%%%%%%%%%%%%% DO NOT EREASE
+
+
+%% \TODO{What about the converse implication ? Is the following lemma true ?
+%% \begin{lemma}
+%%   \label{lem:musti-if-mustset-helper-inverse}
+%%   For every LTS $\genlts_A, \genlts_B$, %
+%%   every $X \in \pparts{\StatesA}$, %
+%%   and every $\client \in \StatesB$,
+%%   if $\musti{\serverA}{\client}$ for every $\serverA \in X$,
+%%   then $\mustset{X}{\client}$.
+%% \end{lemma}
+%% }
+
+
+%%%%%%%%%%%%%%%%%%%%%% THE PREVIOUS LEMMA IS THE INTERESTING ONE
+%%%%%%%%%%%%%%%%%%%%%%
+%% \begin{lemma}
+%%   \label{lem:musti-equals-mustset}
+%%   For every LTS $\genlts_A, \genlts_B$, every
+%%   $\server \in \StatesA$ and every $\client \in \StatesB$,
+%%   $\musti{\server}{\client}$ if and only if $\mustset{\set{\server}}{\client}$.
+%% \end{lemma}
+%%%%%%%%%%%%%%%%%%%%%% DO NOT EREASE
+%%%%%%%%%%%%%%%%%%%%%% DO NOT EREASE
+%% \pl{
+%% \begin{proof}
+%% We first prove that
+%% $\musti{\server}{\client}$ implies $\mustset{\set{\server}}{\client}$.
+%% We proceed by rule induction on the derivation of $\mustset{\server}{\client}$.
+%% In the base case it has been derived using \mnow, and thus $\good{\client}$,
+%% which lets us conclude the base case by an applicaton of \mnow.
+%% In the inductive case we show $\mustset{\set{\server}}{\client}$ by applying the rule \mstep.
+%% We need to show the following.
+%% \begin{enumerate}[(i)]
+%% \item\label{musti-if-mustset-helper-g0} $\lnot \good{\client}$,
+%% \item\label{musti-if-mustset-helper-g1} $\forall \serverA \in \set{\serverA}$ we have that
+%%   $\csys{ \serverA }{ \client } \st{\tau}$,
+%% \item\label{musti-if-mustset-helper-g2}
+%%   $\forall X'$ such that $\set{\serverA} \st{ \tau } X' \neq \emptyset$, $\mustset{X'}{\client}$
+%% \item\label{musti-if-mustset-helper-g3}
+%%   $\forall \client'$, such that $\client \st{ \tau } \client'$, $\mustset{\set{\serverA}}{\client'}$
+%% \item\label{musti-if-mustset-helper-g4}
+%%   $\forall X', \mu \in \Act$,  $\set{\serverA} \wt{\co{\mu}} X' \neq \emptyset$
+%%   and $\client \st{\mu} \client'$ imply $\mustset{ X' }{ \client'}$
+%% \end{enumerate}
+
+%% The first and the second requirements are a consequence of
+%% the derivation of $\mustset{\server}{\client}$ by the rule \mstep.
+%% To show (\ref{musti-if-mustset-helper-g2}) we apply \rlem{mx-forall} which requires us to show
+%% that for each $\serverA'$, $\serverA \in X'$ implies $\mustset{\set{\serverA'}}{\client}$,
+%% which is ensured by the inductive hypothesis.
+%% The third requirement follows directly from an application of the inductive hypothesis.
+%% The last requirement requires a bit more work.
+%% We apply \rlem{mx-forall} which requires us to show
+%% that for each $\serverA'$, $\serverA \in X'$ we have that
+%% $\mustset{\set{\serverA'}}{\client'}$.
+%% Let us pick such $\serverA'$. From the hypothesis $\set{\serverA} \wt{\co{\mu}} X'$
+%% we know that $\serverA \wt{\mu} \serverA'$.
+%% We continue by case analysis on the derivation of the reduction
+%% $\serverA \wt{\mu} \server'$. There are two different cases to consider.
+%% \begin{enumerate}
+%% \item[\rname{wt-tau}]
+%%   An application of \rptlem{mx-preservation}{mx-preservation-wt-mu} together
+%%   with the inductive hypothesis ensures $\mustset{\set{\server'}}{\client'}$
+%%   as required.
+%% \item[\rname{wt-mu}]
+%%   An application of \rptlem{mx-preservation}{mx-preservation-wt-nil} together
+%%   with the inductive hypothesis ensures $\mustset{\set{\server'}}{\client'}$
+%%   as required.
+%% \end{enumerate}
+
+%% The second direction, \ie $\mustset{\set{\server}}{\client}$ implies $\musti{\server}{\client}$,
+%% is a direct consequence of \rlem{musti-if-mustset-helper}.
+%% \end{proof}
+%%%%%%%%%%%%%%%%%%%%%% DO NOT EREASE
+%%%%%%%%%%%%%%%%%%%%%% DO NOT EREASE
+
+
+  %% This definition of $\opMustset$ is notably helpful for our proof of soundness
+  %% (\rlem{soundness-set}), in particular when we have to tackle
+  %% the case where there is a communication between the server $\serverB$
+  %% and the client $\client$ (\rptlem{soundness-set}{aim-soundness-3}).
+%  We illustrate our reasoning through the following example to motivate the
+%  use of the weak reduction as well as the use of sets.
+
+  %% The next example illustrates why in rule \msetstep\ we use the weak
+  %% transitions $X \wt{\co{ \mu }} X'$, and how the use of sets of
+  %% servers help us deal with non-determinism.
+
+
+
+
+We start by lifting our predicates to LTSs where the states are sets of programs: 
+%To lift the predicates~$\bhvleqone$ and~$\bhvleqtwo$ to sets of servers,
+we let
+$$\accht{ X }{ \trace } = \setof{ O }{ \exists \server \in X . O
+  \in \accht{\server}{ \trace }},$$ and for every finite $X \in
+\pparts{ \States }$, we write $X \conv$ to mean $\forall \state \in X \suchthat\state \conv$, we write $  X \cnvalong \trace$ to mean $\forall \state \in X \suchthat \state \cnvalong \trace$, and let
+
+\begin{itemize}
+\item $ X \cnvleqset \serverB$ to mean $\forall \trace \in \Actfin,
+  \text{ if } X \cnvalong \trace
+  \text{ then } \serverB \cnvalong \trace$,
+
+\item
+  $X \accleqset \serverB$ to mean $\forall \trace \in \Actfin,
+  X \cnvalong{\trace} \implies \accht{ X }{ \trace } \ll \accht{ \serverB }{ \trace }$,
+
+\item
+  $X \asleqset \serverB$ to mean $X \cnvleqset \serverB \wedge X \accleqset \serverB$.
+\end{itemize}
+%%$$
+%% \begin{array}{lcl}
+%%   X \cnvleqset \serverB &\text{to mean}& \forall \trace \in \Actfin,
+%%   \text{ if } X \cnvalong \trace
+%%   \text{ then } \serverB \cnvalong \trace
+%%   \\[5pt]
+%%   %% X \accleqset \serverB & \text{to mean}&
+%%   %% \forall \trace \in \Actfin,
+%%   %% X \cnvalong{\trace} \implies\\
+%%   %% && \forall O \in \accht{ \serverB }{ \trace } \wehavethat \\
+%%   %% && \exists \serverA \in X \suchthat \\
+%%   %% &&\exists \widehat{O} \in \accht{ \serverA }{ \trace } . \widehat{ O } \subseteq O
+%%   %% \\[5pt]
+%%   X \accleqset \serverB & \text{to mean}& \forall \trace \in \Actfin,
+%%   X \cnvalong{\trace} \implies\\
+%% &&  \accht{ X }{ \trace } \ll \accht{ \serverB }{ \trace }
+%%   \\[5pt]
+%%   X \asleqset \serverB & \text{to mean}& X \cnvleqset \serverB \wedge X \accleqset \serverB
+%% \end{array}
+%% $$
+
+These definitions imply immediately the following equivalences:
+$$
+\begin{array}{c}
+  \set{\serverA} \accleqset \serverB \Longleftrightarrow p \bhvleqone \serverB\\
+  \set{\serverA} \cnvleqset \serverB \Longleftrightarrow p \bhvleqtwo \serverB
+  \end{array}
+  $$
+and thereby the following lemma.
+\begin{lemma}
+  \label{lem:alt-set-singleton-iff}
+  For all $\genlts_A, \genlts_B, \serverA \in \StatesA$,
+  $\serverB \in \StatesB$,
+  $\serverA \asleq \serverB$ if and only if $\set{\serverA} \asleqset \serverB$.
+\end{lemma}
+%% \begin{proof}
+%%   The results follow directly from the following facts.
+%% \end{proof}
+
+
+%% \TODO{
+%%   In \rlem{bhvleqone-preserved} and \rlem{bhvleqtwo-preserved}
+%%   we have a stronger hypothesis than
+%%   $X \wt{\mu} X'$ in the code.
+%%   We say that for each
+%%   $\serverA \in X$ if $\serverA \wt{\mu} \serverA'$ then $\serverA' \in X'$.
+%%   I fix this tomorrow.
+%% }
+
+
+\newcommand{\completewrt}[2]{\ensuremath{\mathsf{cwrt} \, (#1,#2)}}
+
+The preorder~$\asleqset$ is preserved by $\tau$-transitions on
+its right-hand side, and by visible transitions
+%actions performed
+on both sides.
+We reason separately on the two auxiliary
+preorders $\cnvleqset$ and $\accleqset$.
+We need one
+further notion.
+%% \gb{This should no longer be necessary.                                             %%
+%% We say that a set $X'$ is {\em complete with respect                                %%
+%%   to} a set $X$ and an action $\mu$, denoted                                        %%
+%% $X' \completewrt{X}{\mu}$, if two properties hold: % are true:                      %%
+%% \begin{enumerate}[i)]                                                               %%
+%% \item $X \wt{ \mu } X'$ and                                                         %%
+%% \item                                                                               %%
+%%   for every $\server \in X$, if $\server \wt{\mu} \server'$ then $\server' \in X'$. %%
+%% \end{enumerate}                                                                     %%
+%% Note that if $X' \completewrt{X}{\mu}$ and $X''                                     %%
+%% \completewrt{X}{\mu}$ then $X' = X''$, because the LTSs at hand are image finite.   %%
+%% }                                                                                   %%
+\begin{lemma}
+  \label{lem:bhvleqone-preserved}
+  Let $\genlts_\StatesA, \genlts_\StatesB \in \obaFW$.
+  For every set $X \in \pparts{ \StatesA }$, and
+  $\serverB \in \StatesB$, such that
+  $X \cnvleqset \serverB$,
+  \begin{enumerate}
+  \item\label{pt:bhvleqone-preserved-by-tau}
+    $\serverB \st{ \tau } \serverB'$ implies $X \cnvleqset \serverB'$,
+  \item\label{pt:bhvleqone-preserved-by-mu}
+    $X \convi$, $X \wt{\mu} X'$ and $\serverB \st{\mu} \serverB'$ imply $X' \cnvleqset \serverB'$.
+  \end{enumerate}
+\end{lemma}
+
+
+\begin{lemma}
+  \label{lem:bhvleqtwo-preserved}
+  Let $\genlts_\StatesA, \genlts_\StatesB \in \obaFW$.
+  For every
+  $X, X' \in \pparts{ \StatesA }$ and $ \serverB \in \StatesB$,
+  such that $X \accleqset \serverB$, then
+  \begin{enumerate}
+  \item\label{pt:bhvleqtwo-preserved-by-tau}
+    $\serverB \st{ \tau } \serverB'$ implies $X \accleqset \serverB'$,
+  \item\label{pt:bhvleqtwo-preserved-by-mu}
+    if $X \convi$ then for every $\mu \in \Act$, every $\serverB'$ and $X'$ such that $\serverB \st{\mu} \serverB'$ and $X \wt{\mu} X'$
+    we have $X' \accleqset \serverB'$.
+  \end{enumerate}
+\end{lemma}
+%% \begin{proof}
+%%   We first prove \rptlem{bhvleqtwo-preserved}{bhvleqtwo-preserved-by-tau}.
+%%   We must show $X \accleqset \serverB'$.
+%%   Let us fix a server $\serverB''$ such that
+%%   $X \cnvalong \trace$ and $\serverB' \wt{\trace} \serverB'' \stable$.
+%%   An application of the hypothesis $X \accleqset \serverB$
+%%   provides us with two servers $\serverA' \in X$ and $\serverA''$ such that
+%%   $\serverA' \wt{s} \serverA'' \stable$ and $O(\serverA'') \subseteq O(\serverB'')$
+%%   as required.
+
+%%   We now prove \rptlem{bhvleqtwo-preserved}{bhvleqtwo-preserved-by-mu}.
+%%   Let us fix a server $\serverB''$ such that
+%%   $X' \cnvalong \trace$ and $\serverB' \wt{\trace} \serverB'' \stable$.
+%%   An application of the hypothesis $X \accleqset \serverB$
+%%   requires us to show $X \cnvalong \mu.\trace$ which follows
+%%   from $X \convi$ and $X' \cnvalong \trace$.
+%%   We then obtain two servers $\serverA \in X$ and $\serverA''$ such that
+%%   $\serverA \wt{\mu.\trace} \serverA'' \stable$ and $O(\serverA'') \subseteq O(\serverB'')$
+%%   We decompose the reduction $\serverA \wt{\mu.\trace} \serverA''$ and obtain
+%%   a server $\serverA'$ such that
+%%   $\serverA \wt{\mu} \serverA' \wt{\trace} \serverA''$ and allows us
+%%   to conclude this case.
+%% \end{proof}
+
+
+
+%%%%%%%%%%%%%%%%%%% HIDDEN FOR SPACE REASONS
+%%%%%%%%%%%%%%%%%%%
+%% We now gather sufficient conditions for the servers on the
+%% right-hand side of~$\asleqset$ to perform a silent move,
+%% and for servers on the left-hand side of~$\asleqset$ to perform
+%% weakly visible actions.
+
+%% \begin{lemma}%[\coqSou{unhappy_must_st_nleqx}]
+%%   \label{lem:stability-Nbhvleqtwo}
+%%   Let $\genlts_\StatesA, \genlts_\StatesB \in \obaFW$ and $\genlts_\StatesC \in \obaFB$.
+%%   For every $X \in \pparts{ \StatesA }$ and
+%%   $\serverB \in \StatesB $ such that
+%%   $X \asleqset \serverB$, for every $\client \in \StatesC$
+%%   if $\lnot \good{\client}$ and $\mustset{X}{\client}$
+%%   then $\csys{\serverB}{\client} \st{\tau}$.
+%% \end{lemma}
+
+
+%% \gb{
+%% \begin{lemma}
+%%   \label{lem:empty-nleqx}
+%%   Let $\genlts_\StatesA, \genlts_\StatesB \in \obaFW$.
+%%   For every $X \in \pparts{ \StatesA }$ and
+%%   $\serverB, \serverB' \in \StatesB$,
+%%   such that $X \cnvleqset \serverB$, then
+%%   for every $\mu \in \Act$, if
+%%   $X \convi$, $X \accleqset \serverB$ and  $\serverB \st{\mu}
+%%   \serverB'$
+%%   then $X \Nwt{\mu}$.
+%% \end{lemma}
+%% \begin{proof}
+%%   First note that $X \convi$ and $X \Nwt{\mu}$ imply $X \cnvalong \mu$.
+%%   Then, from $X \cnvleqset \serverB$ and $X \cnvalong \mu$ we have that
+%%   $\serverB \cnvalong \mu$ and thus $\serverB' \convi$.
+%%   As $\serverB'$ terminates, it must be the case that
+%%   there exists a $\serverB''$ such that
+%%   $\serverB \wt{\mu} \serverB' \wt{\varepsilon} \serverB'' \stable$.
+%%   We then apply the hypothesis $X \accleqset \serverB$ to obtain
+%%   two servers $\serverA' \in X$ and $\serverA''$ such that
+%%   $\serverA' \wt{\mu} \serverA'' \stable$ which contradicts the hypothesis
+%%   $X \Nwt{\mu}$ and we are done.
+%% \end{proof}
+%% }
+
+
+%% \begin{lemma}
+%%   \label{lem:empty-nleqx}
+%%   \label{lem:X-must-perform-visible-action}
+%%   Let $\genlts_\StatesA, \genlts_\StatesB \in \obaFW$.
+%%   For every $X \in \pparts{ \StatesA }$ and
+%%   $\serverB, \serverB' \in \StatesB$,
+%%   such that $X \cnvleqset \serverB$, then
+%%   for every $\mu \in \Act$, if
+%%   $X \convi$,  $X \Nwt{\mu}$ and $\serverB \st{\mu} \serverB'$ then $\lnot (X \accleqset \serverB)$.
+%% \end{lemma}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% OLD LEMMA PROVEN VIA A CONTRADICTION
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% OLD LEMMA PROVEN VIA A CONTRADICTION
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% OLD LEMMA PROVEN VIA A CONTRADICTION
+%% \begin{lemma}%[\coqSou{unhappy_must_st_nleqx}]
+%%   \label{lem:stability-Nbhvleqtwo}
+%%   Let $\genlts_\StatesA$, $\genlts_\StatesB$ be $\obaFW$ and $\genlts_\StatesC$ be $\obaFB$.
+%%   For every $X \in \pparts{ \StatesA }$, $\serverB \in \pparts{ \StatesB }$ and $\client \in \StatesC$,
+%%   if $\lnot \good{\client}$ and $\mustset{X}{\client}$ then
+%%   $\csys{\serverB}{\client} \stable$ implies $\lnot (X \asleqset \serverB)$.
+%% \end{lemma}
+%% \begin{proof}
+%%   We show that assuming $X \asleqset \serverB$ leads to a contradiction and thus a derivation of $\bot$.
+%%   First, from the hypothesis $\csys{\serverB}{\client} \stable$ we know the following statements hold.
+%%   \begin{enumerate}[(a)]
+%%   \item\label{stability-Nbhvleqtwo-h1}
+%%     $\serverB \stable$
+%%   \item\label{stability-Nbhvleqtwo-h2}
+%%     $\client \stable$
+%%   \item\label{stability-Nbhvleqtwo-h3}
+%%     there is no $\mu \in \Act$ such that $\serverB \st{\mu}$ and $\client \st{\co{\mu}}$
+%%   \end{enumerate}
+
+%%   The hypotheses $\lnot \good{\client}$ and $ \mustset{X}{\client}$ together with
+%%   \rlem{mustx-terminate-ungood} imply $X \convi$ and thus $X \cnvalong \varepsilon$.
+%%   An application of $X \accleqset q$ with $\trace = \varepsilon$, $\stateB' = \stateB$,
+%%   and (\ref{stability-Nbhvleqtwo-h1}) gives us a $\serverA'$ such that
+%%   $\serverA \wt{\varepsilon} \serverA' \stable$ and $O(\serverA') \subseteq O(\serverB)$.
+%%   An application of $\mustset{X}{\client}$, \rlem{wt-nil-mx} and \rlem{mx-sub} ensures that
+%%   $\mustset{\set{\serverA'}}{\client}$.
+%%   As $\lnot \good{\client}$, it must be the case that $\mustset{\set{\serverA'}}{\client}$
+%%   is derived using the rule \mstep which implies that $\csys{\serverA'}{\client} \st{\tau}$.
+%%   We contine with a case analysis on how this transition has been derived.
+%%   As $\serverA'$ is stable, and from (\ref{stability-Nbhvleqtwo-h2}) we know that
+%%   it must be derived using \rname{s-com} such that
+%%   $\serverA' \st{\mu}$ and $\client \st{\co{\mu}}$ for some $\mu \in \Act$.
+%%   Finally, we distinguish whether $\mu$ is an input or an output.
+%%   In the first case $\mu$ is an input.
+%%   From $O(\serverA') \subseteq O(\serverB)$ it must be the case that $\serverB \st{\co{\mu}}$
+%%   holds, which contradicts the hypothesis that $\csys{\serverB}{\client} \stable$.
+%%   In the second case $\mu$ is an output.
+%%   As $\serverB$ is $\obaFW$, we can apply the axiom for forwarders and get a server $\stateB'$
+%%   such that $\serverB \st{\co{\mu}}$. This implies the existence of a communication
+%%   between $\serverB$ and $\client$, which contradicts
+%%   the hypothesis that $\csys{\serverB}{\client} \stable$ and lets us conclude this case.
+%% \end{proof}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% END OLD LEMMA
+
+%%%%%%%%%%%%%%%%%%% HIDDEN FOR SPACE REASONS
+%%%%%%%%%%%%%%%%%%%
+
+
+The main technical work for the proof of soundness is carried out by the next lemma.
+\begin{lemma}
+  \label{lem:soundness-set}
+  Let $\genlts_\StatesA, \genlts_\StatesB \in \obaFW$ and
+  $\genlts_\StatesC \in \obaFB$.
+  For every set of servers $X \in \pparts{ \StatesA }$,
+  server $\serverB \in \StatesB$ and client $\client \in \StatesC$,
+  if $\mustset{X}{\client}$ and $X \asleqset \serverB$ then $\musti{\serverB}{\client}$.
+\end{lemma}
+
+
+
+\begin{proposition}[Soundness]
+  \label{prop:bhv-soundness}
+  For every $\genlts_A, \genlts_B \in \obaFB$ and
+  servers $\serverA \in \StatesA, \serverB \in \StatesB $,
+  if $\liftFW{ \serverA } \asleq \liftFW{ \serverB }$ then $\serverA \testleqS \serverB$.
+\end{proposition}
+\begin{proof}
+Point (2) of \rlem{musti-obafb-iff-musti-obafw} ensures that the result follows if we prove that
+$\liftFW{\serverA} \testleqS \liftFW{\serverB}.$
+Fix a client $\client$ such that $\musti{\liftFW{\serverA}}{\client}$.
+\rlem{soundness-set} implies the required
+$\musti{\liftFW{\serverB}}{\client}$, if we show that
+\begin{enumerate}[(i)]
+  \item $\mustset{ \set{ \liftFW{\serverA} } }{ \client }$, and that
+  \item $\set{ \liftFW{ \serverA } } \mathrel{\preccurlyeq^{\mathsf{set}}_{\mathsf{AS}}} \liftFW{\serverB}$.
+\end{enumerate}
+The first fact follows from the assumption that $\musti{\liftFW{\serverA}}{\client}$
+and \rlem{musti-if-mustset-helper} applied to the singleton
+$\set{\liftFW{\serverA}}$.
+The second fact follows from the hypothesis that $\liftFW{ \serverA }
+\asleq \liftFW{ \serverB }$ and \rlem{alt-set-singleton-iff}.\qed
+%%%% ORIGINAL PROOF
+  %% Fix a client $\client$ such that $\musti{\liftFW{\serverA}}{\client}$.
+  %% The required $\musti{\liftFW{\serverB}}{\client}$ follows from
+  %% \rlem{soundness-set}, if we show that
+  %% $\set{\serverA} \asleq \serverB$.
+  %% We obtain $\set{\serverA} \asleq \serverB$ by
+  %% an application of \rlem{alt-set-singleton-iff} in the hypothesis $\serverA \asleq \serverB$.
+  %% The requirement $\musti{\set{\liftFW{\serverA}}}{\client}$ is a consequence of
+  %% an application of \rlem{musti-equals-mustset} together with the hypothesis that
+  %% $\musti{\liftFW{\serverA}}{\client}$.
+\end{proof}
+\clearpage

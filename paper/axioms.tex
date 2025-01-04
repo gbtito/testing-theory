@@ -1,0 +1,221 @@
+\section{Selinger axiom for asynchrony}
+
+%% \begin{figure*}[t]
+%% \hrulefill\\
+%% \begin{tabular}{c@{\hskip 20pt}c@{\hskip 20pt}c@{\hskip 20pt}c}
+%% %\begin{framed}[16em]
+%% %  \begin{minipage}{60pt}
+%%     \begin{tabular}{l@{\hskip 4pt}c@{\hskip 0pt}l}
+%%     \begin{tikzcd}
+%%       p \arrow[r, "\co{\aa}"]
+%%       &
+%%       p' \arrow[d, "\alpha"]
+%%       \\
+%%       &
+%%       q
+%%     \end{tikzcd}
+%%     &$\Rightarrow$&
+%%     \begin{tikzcd}
+%%       p
+%%       \arrow[r, "\co{\aa}"]
+%%       \arrow[d, "\alpha"]
+%%       &
+%%       p' \arrow[d, "\alpha"]
+%%       \\
+%%       p'' \arrow[r, "\co{\aa}"]
+%%       &
+%%       q
+%%     \end{tikzcd}
+%%     \end{tabular}
+%% %    \end{minipage}
+%% %\end{framed}
+%% &
+%% %\begin{framed}[16em]%\outputconfluencediagram
+%% \begin{tikzcd}
+%% p \arrow[r, "\co{\aa}"]
+%% &
+%% p' \arrow[d, "\aa"]
+%% \\
+%% &
+%% q
+%% \end{tikzcd}
+%% $\Rightarrow$
+%% \begin{tikzcd}
+%% p
+%% \arrow[r, "\co{\aa}"]
+%% \arrow[rd, "\tau"]
+%% &
+%% p' \arrow[d, "\aa"]
+%% \\
+%% &
+%% q
+%% \end{tikzcd}
+%% \\
+%% \outputcommutativity  &  \outputfeedback
+%% \\[10pt]
+%% \begin{tikzcd}
+%% p \arrow[r, "\co{\aa}"]
+%% \arrow[d, "\co{\aa}"]
+%% &
+%% p'
+%% \\
+%% p''
+%% \end{tikzcd}
+%% $\Rightarrow p' = p''$
+%% &
+%% \begin{tikzcd}
+%% p \arrow[r, "\co{\aa}"]
+%% \arrow[d, "\tau"]
+%% &
+%% p'
+%% \\
+%% p''
+%% &
+%% \end{tikzcd}
+%% $\Rightarrow$
+%% \begin{tikzcd}
+%% p
+%% \arrow[r, "\co{\aa}"]
+%% \arrow[d, "\tau"]
+%% &
+%% p'
+%% \arrow[d, "\tau"]
+%% \\
+%% p''
+%% \arrow[r, "\co{\aa}"]
+%% &
+%% q
+%% \end{tikzcd}
+%% \,\, or
+%% \begin{tikzcd}
+%% p
+%% \arrow[r, "\co{\aa}"]
+%% \arrow[d, "\tau"]
+%% &
+%% p'
+%% \arrow[ld, "\aa"]
+%% \\
+%% p''
+%% \end{tikzcd}
+%% &
+
+%% \\[5pt]
+%% \outputdeterminacy & \outputtau
+%% \\[10pt]
+%% \begin{tikzcd}
+%% p \arrow[r, "\co{\aa}"]
+%% \arrow[d, "\alpha"]
+%% &
+%% p'
+%% \\
+%% p''
+%% &
+%% \end{tikzcd}
+%% $\Rightarrow$
+%% \begin{tikzcd}
+%% p
+%% \arrow[r, "\co{\aa}"]
+%% \arrow[d, "\alpha"]
+%% &
+%% p' \arrow[d, "\alpha"]
+%% \\
+%% p'' \arrow[r, "\co{\aa}"]
+%% &
+%% q
+%% \end{tikzcd}
+%% &
+%% \begin{tikzcd}
+%% &
+%% p'
+%% \arrow[d, "\co{\aa}"]
+%% \\
+%% p''\arrow[r, "\co{\aa}"]
+%% &
+%% p
+%% \end{tikzcd}
+%% $\Rightarrow p' = p''$
+%% \\
+%% where $\alpha \neq \co{\aa}$ and $\alpha \neq \tau$
+%% \\
+%% \outputconfluence & \outputdeterminacyinv
+%% \end{tabular}
+%% \caption{
+%% First-order axioms for output-buffered agents with feedback as given by   \cite%[Table 5]
+%%   {DBLP:conf/concur/Selinger97}, plus the \outputdeterminacyinv axiom.}
+%% %\caption{Two of the axioms by \cite{DBLP:conf/concur/Selinger97} for
+%% %  asynchronous out-buffered agents.}
+%% \label{fig:axioms}
+%% \hrulefill
+%% \end{figure*}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{A closer look at the Selinger axioms}
+We now discuss the axioms in \rfig{axioms}.
+%Let us now discuss the axioms in Figure~\ref{fig:axioms}.
+%As mentioned already,
+The \outputcommutativity axiom expresses the non-blocking behaviour of
+outputs: %it says that
+an output cannot be a cause of any subsequent transition, since it can
+also be executed after it, leading to the same resulting state. Hence,
+outputs are concurrent with any subsequent transition.  The
+\outputfeedback axiom says that an output followed by a complementary
+input can also synchronise with it to produce a $\tau$-transition
+(since the output and the input are in fact concurrent). These first
+two axioms specify properties of outputs that are followed by another
+transition. Instead, the following three axioms, \outputconfluence,
+\outputdeterminacy and \outputtau, specify properties of outputs that
+are co-initial with another transition\footnote{Two transitions are
+  co-initial if they stem from the same state.}. The
+\outputdeterminacy and \outputtau axioms apply to the case where the
+co-initial transition is an identical output or a $\tau$-transition
+respectively, while the \outputconfluence axiom applies to the other
+cases.  When taken in conjunction, these three axioms state that outputs
+cannot be in conflict %(i.e., mutually exclusive)
+with any co-initial transition, except when this is a
+$\tau$-transition: in this case, the \outputtau axiom allows for a
+confluent nondeterminism between the $\tau$-transition on one side and
+the output followed by the complementary input on the other side,
+since the $\tau$-transition may represent a synchronisation between the
+output and the input.
+
+Since the axiom \outputdeterminacyinv is not part of Selinger
+axioms, we discuss it in the next paragraph.
+
+
+
+We now explain the novel
+\outputdeterminacyinv axiom.
+It is the dual of \outputdeterminacy, as it states that
+also backward transitions with identical outputs lead to the same
+state. The intuition is that if two programs, by removing the
+same message from the mailbox, arrive exactly at the same
+state, then
+they must coincide. This seems natural if communication takes place
+via a shared mailbox.
+This axiom need not be assumed in \cite{DBLP:conf/concur/Selinger97}
+because it can be derived from Selinger axioms when modelling a calculus like~\ACCS
+equipped with a parallel composition operator~$\parallel$ (see
+Lemma~\ref{lem:output-shape} in Appendix~\ref{sec:accs}).
+We use the \outputdeterminacyinv axiom only to prove a technical property of clients (\rlem{inversion-gen-mu}) that we use to prove our completeness result.
+%%%
+%%% gio (27/12/2023) the next sentence sounds like the axiom is
+%%% entirely ad-hoc: we added it just to make the proofs go thourgh
+%%%
+%On the other hand, it is needed in our calculus-independent setting, where
+%such a parallel operator on LTSs is not given.
+
+
+%% \ila{We may now explain why we added the new axiom
+%%   \outputdeterminacyinv axiom
+%%   \ilacom{a better name would be ``backward output determinacy''}
+%%   to Selinger ones in \rfig{axioms}.
+%%   Note that this axiom is the dual of \outputdeterminacy, as it states that
+%%   also backward transitions with identical outputs lead to the same
+%%   state. This axiom was not assumed by Selinger because it can be
+%%   derived from his axioms when modelling a calculus like \ACCS
+%%   equipped with a parallel composition operator $\parallel$ (see
+%%   Lemma~\ref{lem:output-shape} in Appendix~\ref{sec:accs}). On the
+%%   other hand, it is needed in our calculus-independent setting, where
+%%   such a parallel operator on LTSs is not given.
+%%   %%%}

@@ -1,0 +1,495 @@
+\section{Introduction}
+\label{sec:intro}
+
+%% Code refactoring is a routine task to develop or update software, and
+%% it requires methods to ensure that a program~$\serverA$ can be safely
+%% replaced by a program~$\serverB$.  One way to address this issue is
+%% via refinement relations, \ie preorders.  For programming languages,
+%% the most well-known one is Morris \emph{extensional} preorder
+%% \cite[pag.~$50$]{morris}, defined by letting~$p \leq q$ if for all
+%% contexts~$C$, whenever~$C[p]$ reduces to a normal form~$N$,
+%% then~$C[q]$ also reduces to~$N$.
+
+%% \paragraph{Comparing servers}
+%% This paper studies a version of Morris preorder for
+%% \nondeterministic asynchronous \svrclt systems.
+%% In this setting it is natural to reformulate the preorder by replacing
+%% reduction to normal forms (\ie termination) with a suitable
+%% \emph{liveness} property.
+%% Let~$\csys{ \server }{ \client }$ denote a {\em \svrclt\ system},
+%% that is a parallel composition in which the identities of the
+%% server~$\server$ and the client~$\client$ are distinguished, and
+%% whose computations have the form
+%% $
+%% \csys{\server~}{~\client} =
+%% \csys{ \server_0 }{ \client_0 } \st{ }
+%% \csys{ \server_1 }{ \client_1 } \st{ }
+%% \csys{ \server_2 }{ \client_2 } \st{ } \ldots,
+%% $
+%% where each step represents either an internal computation
+%% of one of the two components, or an interaction between them.
+%% Interactions correspond to handshakes, where
+%% two components ready to perform matching input/output actions
+%% advance together.
+%% We express liveness by saying that  $\server \text{ \emph{must pass} }
+%% \client$, denoted $\Must{ \server }{ \client }$, if in every maximal
+%% computation of $\csys{ \server }{ \client
+%% }$ there exists a state $\csys{ \server_i}{ \client_i}$ such that
+%% $\good{\client_i}$, where~$\goodSym$ is a decidable predicate
+%%  indicating that the client has reached a successful state.
+%% Servers are then compared according to their capacity to
+%% satisfy clients, \ie via contexts of the form~$\csys{[-]}{\client}$
+%% and the predicate~$\opMust$.
+%% %namely to lead clients to successful states, \ie via
+%% %In other words, servers are compared
+%% %via contexts of the form~$\csys{[-]}{\client}$.
+%% %, as argued also by \cite{DBLP:phd/us/Thati03}.
+%% Morris preorder %, when restricted to computations leading to
+%% %successful states,
+%% then becomes the \mustpreorder\
+%% by De Nicola and Hennessy~\cite{DBLP:journals/tcs/NicolaH84} :
+%% %\begin{equation}
+%% %  \label{eq:must-preorder}
+%% %%
+%% $
+%%   \serverA \testleqS \serverB \text{ when } \forall \client \wehavethat
+%%   \Must{\serverA}{\client} \implies
+%%   \Must{\serverB}{\client}.
+%%   $
+%% %%\end{equation}
+
+
+%% \paragraph{Advantages}
+%%   The \mustpreorder is by definition liveness preserving,
+%%   because $\Must{ \server }{ \client }$ literally means that
+%%   ``in every execution something good must happen (on the client
+%%   side)''.  Results on~$\testleqS$ thus shed light on
+%%   liveness-preserving program transformations.
+
+%%   The~\mustpreorder is independent of any particular calculus,
+%%   as its definition requires simply
+%%   (1) a reduction semantics for the parallel composition
+%%   $\csys{ \server }{ \client }$, and (2)
+%%   a predicate $\goodSym$ over programs.
+%%   %%% LONG VERSION
+%%   %% We thus do not fix any particular calculus:
+%%   %% we assume a way of describing how servers and clients interact
+%%   %% with the environment, and use it to define the semantics of $\csys{
+%%   %%   - }{ - }$.
+%%   %%As a result,
+%%   Hence~$\testleqS$
+%%   % the relation~$\testleqS$
+%%   % lets us compare software components
+%%   may relate servers written in different languages. For instance, servers written in
+%%   \textsc{OCaml} may be compared to servers written in \textsc{Java}
+%%   according to clients written in \textsc{Python}, because all
+%%  these languages use the same basic protocols for communication.
+%%   % all these languages communicate using the same basic protocols.
+%%   %%VERY DODGY STATEMENT:  that we are able to model.
+
+%% \paragraph{Drawback}
+%%   The definition of the \mustpreorder is {\em contextual}: proving
+%%   $\serverA~\testleqS~\serverB$ requires analysing an {\em
+%%   infinite} amount of clients, and so the definition of
+%% the preorder does not entail an effective proof method.
+%% A solution to this problem is to define an {\em alternative (semantic)
+%%   characterisation} of the preorder~$\testleqS$, \ie a
+%% preorder~$\altleq$ that coincides with~$\testleqS$
+%% and does away with the universal quantification over clients (\ie contexts).
+%% In {\em synchronous} settings, i.e. when both input and output
+%% actions are blocking, such alternative characterisations have been thoroughly
+%% investigated, typically via a behavioural approach based on labelled transition
+%% systems.
+
+
+%% \begin{figure}[t]
+%%   \hrulefill
+%%   \begin{center}
+%%     \begin{minipage}{4cm}
+%%         \centering
+%%       \begin{tikzpicture}
+%%         \node[state,scale=0.8] (s1) at (6,0) {$\server_0$};
+%%         \node[state,scale=0.8,below of=s1,left of=s1] (s2) {$\server_1$};
+%%         \node[state,scale=0.8,below of =s1,right  of=s1] (s3) {$\server_2$};
+%%         \node[state,scale=0.8,below of=s2] (s4) {$\server_3$};
+%%         \node[state,scale=0.8,below of=s3] (s5) {$\server_4$};
+
+%%         \node[scale=0.8, below of = s5] (dummy) {$$};
+
+%%         \path[->]
+%%         (s1) edge node [above left,scale=0.8] {$\texttt{str}$} (s2)
+%%         (s1) edge node [above right,scale=0.8] {$\texttt{float}$} (s3)
+%%         (s2) edge node [left,scale=0.8] {$\co{\texttt{int}}$} (s4)
+%%         (s3) edge node [right,scale=0.8] {$\co{\texttt{long}}$} (s5);
+%%       \end{tikzpicture}
+%%       \end{minipage}%
+%%       \begin{minipage}{4cm}
+%%         \centering\vskip-0.95em
+%%       \begin{tikzpicture}
+%%         \node[state,scale=0.8] (s0) at (0,0) {$\client_0$};
+%%         \node[state,dashed,scale=0.8,below right = +15pt and +15pt of s0] (s1) {$\client_2$};
+%%         \node[state,scale=0.8,below left = +15pt and +15pt of s0] (s2) {$\client_1$};
+%%         \node[state,dashed,scale=0.8,below right = +15pt and +15pt of s2] (s3) {$\client_3$};
+
+%%         \path[->]
+%%         (s0) edge node [above left,scale=0.8] {$\co{\texttt{str}}$} (s2)
+%%         (s0) edge node [above right,scale=0.8] {$\texttt{int}$} (s1)
+%%         (s2) edge node [below left,scale=0.8] {$\texttt{int}$} (s3)
+%%         (s1) edge node [below right,scale=0.8] {$\co{\texttt{str}}$} (s3);
+%%     \end{tikzpicture}
+%%   \end{minipage}
+%%   \end{center}
+%%   \vskip-1.5em
+%%   \caption{The behaviours of a server $\server_0$ and of a client $\client_0$.}
+%%   \label{fig:first-example}
+%%   \hrulefill
+%% \end{figure}
+
+%% \paragraph{Labelled transition systems}
+%% A program~$\serverA$ is associated with
+%% % $\ltsof{\serverA}$,
+%% a labelled transition system (LTS) representing its behaviour,
+%%  which we denote by $\ltsof{\serverA}$.
+%% %
+%% \rfig{first-example} presents two instances of LTSs, where
+%% transitions are labelled by input actions such as $\texttt{str}$, %$\aa$,
+%% output actions such as $\co{\texttt{str}}$, or the internal action $\tau$ (not
+%% featured in~Figure~\ref{fig:first-example}), while dotted nodes represent
+%% successful states, \ie those satisfying the predicate~$\goodSym$. There, the
+%% server~$\server_0$ is ready to input either a string or a float.
+%% %
+%% It is the environment that, by offering an output of
+%% either type, will make~$\server$ move to either~$\server_1$
+%% or~$\server_2$.
+%% %
+%% The client~$\client_0$, on the other hand, is ready to either output a
+%% string, or input an integer. The input ${\tt int}$ makes the client
+%% move to the %$\goodSym$
+%% successful state~$\client_2$, while the output $\co{\tt{str}}$ makes
+%% the client move to the state $\client_1$, where it can still perform
+%% the input ${\tt int}$ to reach the %$\goodSym$
+%% successful state~$\client_3$. In an asynchronous setting, output
+%% transitions enjoy a 
+%% commutativity property on which we will return later.
+%% %
+%% Programs $\serverA$ are usually associated with their behaviours
+%% $\ltsof{\serverA}$ via inferences rules that we omit in the main body of the
+%% paper, as they are standard.
+
+%% \paragraph{Alternative preorders for synchrony} 
+
+%% Program behaviours, \ie~LTSs, are used to define the
+%% alternative preorders for~$\testleqS$
+%% following one of two different
+%% approaches: \MustSets or \AcceptanceSets.
+
+%% Both approaches were
+%% originally proposed for Milner's
+%% Calculus of Communicating Systems ($\CCS$)~\cite{DBLP:books/daglib/0098267},
+%% where communication is \emph{synchronous}.
+%% %
+%% The first alternative preorder, which we denote by~$\msleq$, was put
+%% forth by De Nicola~\cite{DBLP:journals/tcs/NicolaH84}, and it
+%% compares server behaviours according to their \MustSets, \ie~the sets of
+%% actions that they may perform.
+%% %
+%% The second alternative preorder, which we denote by~$\asleq$, was put
+%% forth by Hennessy~\cite{DBLP:books/daglib/0066919}, and it compares the
+%% \AcceptanceSets of servers, \ie~how servers can be moved out of their
+%% potentially deadlocked states.
+%% %
+%% Both these preorders characterise~$\testleqS$ in the
+%% following sense:
+%% %
+%% \begin{align}
+%%       \label{eq:bhv-mustset-characterisation}
+%%   \forall \serverA , \serverB \in \CCS \wehavethat\; & \serverA \testleqS \serverB
+%%   \text{ iff } \ltsof{\serverA} \msleq \ltsof{\serverB}
+%%   \\
+%%     \label{eq:bhv-accset-characterisation}
+%%   \forall \serverA , \serverB \in \CCS \wehavethat\; & \serverA \testleqS \serverB
+%%   \text{ iff } \ltsof{\serverA} \asleq \ltsof{\serverB}
+%% \end{align}
+%% %
+%% While these
+%%   alternative preorders do away with the universal quantification
+%% over clients, they are not practical to use directly, as they still universally
+%% quantify over (finite) traces of actions.
+%% %
+%% A more practical approach \cite{DBLP:journals/jacm/AcetoH92} is to use a
+%% coinductively defined preorder~$\coindleq$ based on~$\asleq$
+%% \cite{DBLP:journals/jacm/AcetoH92,DBLP:conf/concur/LaneveP07,DBLP:journals/mscs/BernardiH16}.
+%% %
+%% It has two advantages: first, its definition quantifies universally on single
+%% actions, and it allows the user to use standard coinductive methods, as found in
+%% the literature on bisimulation.
+%% %
+%% In the case where the LTS is image-finite, such as for CCS and most process
+%% calculi, the coinductive preorder is sound and complete:
+%% \begin{equation}
+%%       \label{eq:bhv-coind-characterisation}
+%%   \forall \serverA , \serverB \in \CCS \wehavethat\; \serverA \testleqS \serverB
+%%   \text{ iff } \ltsof{\serverA} \coindleq \ltsof{\serverB}
+%% \end{equation}
+%
+% Note that in Equation~(\ref{eq:bhv-coind-characterisation}) the LHS of
+% the inequality is a set of servers rather than a single server. The
+% reason is that in our proof of soundness we use an LTS whose
+% states are sets of processes, since this helps us to deal with server
+% nondeterminism.
+
+
+
+%% \gb{%
+%% {\smaller[.99]
+%% $$
+%% \begin{array}{|l@{\hskip 1pt}l@{\hskip 2pt}c@{\hskip 2pt}l|l@{\hskip 1pt}l@{\hskip 2pt}c@{\hskip 2pt}l|}
+%%   \hline
+%%   \forall \serverA , \serverB \in \CCS \wehavethat & \serverA \testleqS \serverB
+%%   & \text{ iff } & \ltsof{\serverA} \asleq \ltsof{\serverB}
+%%   &
+%%    \forall \serverA , \serverB \in \obaFB
+%%     \wehavethat& 
+%%     \serverA \testleqS \serverB
+%%     &\text{ iff }&
+%%     \liftFW{\serverA} \msleq \liftFW{\serverB}
+%% \\
+%%   \label{eq:bhv-mustset-characterisation}
+%%   \forall \serverA , \serverB \in \CCS \wehavethat & \serverA \testleqS \serverB
+%%   & \text{ iff } & \ltsof{\serverA} \msleq \ltsof{\serverB}
+%%   &
+%%   \forall \serverA , \serverB \in \obaFB
+%%     \wehavethat&
+%%     \serverA \testleqS \serverB
+%%     &\text{ iff }&
+%%     \liftFW{\serverA} \asleq \liftFW{\serverB}
+%%     \\[2pt]
+%%     \hline
+%%     \multicolumn{4}{c}{\text{(a) Seminal results}}
+%%     &
+%%     \multicolumn{4}{c}{\text{(b) Novel results}}
+%% \end{array}
+%% $$
+%% }
+%% }%% \gb
+
+%For instance \cite{DBLP:journals/iandc/BorealeNP02} use it
+%in an asynchronous settings, \ilacom{I would not mention asynchronous
+%  approaches here. I would only do it after we start talking about the
+%  asynchronous case, namely after the paragraph ``On the Internet,
+%  though\ldots''} and
+%% REDUNDANT FOR WE ALREADY SAID IT ABOVE
+%% In both~(\ref{eq:bhv-accset-characterisation}) and~(\ref{eq:bhv-mustset-characterisation}),
+%% $\CCS$ is Milner's Calculus of Communicating Systems
+%% \cite{DBLP:books/daglib/0098267}, and thus~$\serverA$ and~$\serverB$
+%% are syntactic terms.
+%%   There the server~$\server$ is \ila{initially} in a {\em stable state}: it
+%% cannot perform any $\tau$ move, but \ila{it} is ready to input either a string
+%% or a float, and it is the environment that, by offering an output of
+%% either type, will make~$\server$ move to a different state.
+%% Hence,~$\server_0$ models an {\em external} choice. The
+%% client~$\client$, on the other hand, can either output a string, or
+%% move to a different state via an internal computation.
+%This is a form of {\em internal choice}. \ilacom{To my view, this does
+%  not represent an internal choice - which should have both outcoming
+%  transitions labelled by $\tau$ - but rather a parallel composition
+%  of the output $\co{\texttt{str}}$ with the action $\tau$, as
+%  witnessed by the fact that the LTS is diamond shaped (cf axiom
+%  \ila{\outputtau).}}
+%can interact
+  %In either case, in each maximal computation of $\csys{ \server }{ \client }$ the client will eventually reach a successful state.}
+
+%%%%%%%%% ILARIA: Logical characterisation, commented off 23/11/23
+
+% {\em Logical} characterisations of~$\testleqS$, instead,
+% require defining when a program~$\server$ models a certain
+% formula~$\phi$, denoted $\server \models \phi$, where
+% formulae belong typically to the recursive Hennessy-Milner
+% logic, \ie the modal $\mu$-calculus, and the
+% characterisations essentially identify the fragment~$L$
+% of this logic, which is necessary and sufficient to capture
+% the contextual preorder:
+% \begin{equation}
+%   \label{eq:logical-characterisation}
+%   \forall \serverA , \serverB \in \CCS \wehavethat
+%   \serverA \testleqS \serverB
+%   \text{ iff }  (\forall \phi \in L \wehavethat \serverA \models \phi \implies \serverB \models \phi)
+% \end{equation}
+% These characterisations, given in Theorem 4.1 by
+% \cite{DBLP:journals/jacm/AcetoH92} and indirectly by
+% \cite{DBLP:journals/corr/abs-1011-6438},
+% %are close in spirit to the
+% %well-known theorem by \cite{DBLP:journals/jacm/HennessyM85},  and they
+% identify the behavioural proprieties that are invariant under code refactoring done via~$\testleqS$.
+
+%% OLD POPL TEXT
+%% By contrast, {\em logical} characterisations
+%% define~$\altleq$~comparing servers according to the formulae of the
+%% recursive Hennessy-Milner logic\footnote{\ie the modal $\mu$-calculus}
+%% that they satisfy: %
+%% if $\serverA \altleq \serverB$ and~$\serverA$~satisfies a
+%% formula~$\phi$,
+%% %such %as~$\dmd{\texttt{str}}(\dmd{\texttt{int}}\true
+%% % \wedge \dmd{\texttt{float}}\true)$
+%% then~$\serverB$~also does.
+
+%%%%%%%%% ILARIA: end of Logical characterisation %%%%%%%%%%%%%%%
+
+
+
+
+
+%% \paragraph{Asynchrony} %
+%% In distributed systems, communication is inherently
+%% asynchronous. For instance, the standard TCP transmission on the
+%% Internet is asynchronous.  Actor languages like \textsc{Elixir} and
+%% \textsc{Erlang} implement asynchrony via mailboxes, and both
+%% \textsc{Python} and \textsc{JavaScript} offer developers the
+%% constructs \textsc{async/wait}, to return promises (of results) or
+%% wait for them.  In this paper we model asynchrony via
+%% \emph{output-buffered agents with feedback}, as introduced by
+%% Selinger~\cite{DBLP:conf/concur/Selinger97}.  These are LTSs obeying
+%% the axioms in \rfig{axioms}, where~$\aa$ denotes an input
+%% action,~$\co{\aa}$ denotes an output action,~$\tau$ denotes the
+%% internal action, and~$\alpha$ ranges over all these actions.  For
+%% instance, the \outputcommutativity axiom states that an output
+%% $\co{a}$ % $\co{a}$ that is followed by any action~$\alpha$,
+%% can always be postponed: if $\co{a}$ is followed by any
+%% action~$\alpha$, it can commute with it.  In other words, outputs are
+%% non-blocking, as illustrated by the LTS for~$\client_0$ in
+%% \rfig{first-example}.
+%% We defer a more detailed discussion of these axioms in
+%% to \rsec{preliminaries}.
+
+\input{axioms-figure}
+
+%The \outputfeedback axiom states that any message emitted by an agent
+%is immediately available as input to the agent itself.
+
+%% These axioms are typically enjoyed by LTS of calculi in which
+%% communication takes place via a global unordered mailbox.
+%% In turn, this communication model is the one that a priori allows for the most
+%% \nondeterminismT, and this is why we favour it.
+
+
+%% gb{The~$\tau$ action denotes internal computation of an agent, or a
+%%   interactions between two agents. For instance, the computations
+%%   in the system~$\csys{ \server_0 }{ \client_0 }$, where~$\server_0$
+%%   and~$\client_0$ are give in \rfig{first-example} amount to
+%%   $\csys{ \server_0 }{ \client_0 } \st{\tau}
+%%   \csys{ \server_1 }{ \client_2 } \st{\tau} \csys{ \server_3 }{
+%%   \client_3 }$.
+%%   Note that \outputcommutativity implies a lack of causality between
+%%   the client output $\co{{\tt str}}$ and its input ${\tt int}$, and hence
+%%   the order of interactions depends on the order of the inputs in the
+%%   server side.}
+%%% NOT IMPORTANT ON A FIRST READ
+%% We find it worth attention for it is the one that allows for the most
+%% \nondeterminismT, and thus proofs that tackle this model can be adapted to more
+%% deterministic settings, for instance when asynchrony is implemented
+%% via ordered queues, as in \cite{josephs}.
+%% The more deterministic the semantics, the easier the reasoning,
+%% as already shown by theories of \mustpreorder in \CCS as compared
+%% to the ones for session types \cite{DBLP:journals/mscs/BernardiH16}.
+%% In output-buffered agents, outputs enjoy the \outputcommutativity\ and
+
+%% \outputfeedback\ axioms.
+%% \paragraph{Technical difficulties} % due to asynchrony.}
+%% The practical importance of asynchrony motivates a % suitable
+%% specific study of~$\testleqS$. Efforts in this direction have
+%% been made, all of which focussed on process calculi
+%% \cite{DBLP:conf/fsttcs/CastellaniH98,DBLP:journals/iandc/BorealeNP02,DBLP:phd/us/Thati03,DBLP:journals/jlp/Hennessy05},
+%% while the axioms in \rfig{axioms} apply to LTSs.
+%% % The axioms in \rfig{axioms}, though, create an asymmetry between output
+%% % and input actions, because they % force
+%% % impose properties only over the outputs.
+%% Note that these axioms impose conditions
+%%   only over outputs, and this asymmetric treatment of inputs and outputs
+%% substantially complicates the proofs of completeness and soundness of
+%% the alternative characterisations of~$\testleqS$.
+%% LONG VERSION
+%% For instance, the phenomenon leaps out in the completeness proofs of alternative
+%% characterisations, for their arguments depend on the contexts (\ie
+%% clients), and the standard reasoning requires clients with blocking
+%% outputs, that do not exist in the asynchronous setting.  As a
+%% consequence, the results in (\ref{eq:bhv-mustset-characterisation})
+%% and (\ref{eq:bhv-accset-characterisation}) do not hold in settings
+%% where programs communicate by modifying a shared unordered buffer
+%% \cite{DBLP:conf/concur/Selinger97,DBLP:conf/ecoop/HondaT91,
+%%   boudol:inria-00076939}.
+% and hence outputs are {\em non-blocking}.
+%% For instance, \cite{DBLP:conf/fsttcs/CastellaniH98}
+%% give simple counterexamples to~(\ref{eq:bhv-accset-characterisation})
+%% in the setting of asynchronous \CCS (ACCS). There $ {\tt str}.\Nil
+%% \testleqS \Nil $, \ie a server that does nothing is as good as a
+%% server than can input a  string, while $ {\tt str}.\Nil \not \asleq
+%% \Nil $.
+%As for
+%% To underline the subtleties due to asynchrony, we note that the completeness
+%% result for asynchronous
+%%   \CCS given by Castellani and Hennessy
+%%   in~\cite{DBLP:conf/fsttcs/CastellaniH98},
+%%   and subsequently extended to the $\pi$-calculus by 
+%%   Hennessy~\cite{DBLP:journals/jlp/Hennessy05},
+  %% is false (see \rapp{counterexample}).
+
+% the technical work to obtain
+% completeness (lemmas 3.26 and 3.27 there) to the reader.
+%% LONG VERSION
+%% Similarly
+%% for Theorem 5.3 of \cite{DBLP:phd/us/Thati03}, which is presented as
+%% a ``simple adaptation of the [\ldots] characterisation [\ldots] over
+%% asynchronous CCS \cite{DBLP:conf/fsttcs/CastellaniH98}'', and
+%% therefore not provided with a proof.  Instead,
+%% \cite{DBLP:journals/iandc/BorealeNP02} change the definition of the
+%% alternative preorder to arrive at a characterisation.
+
+
+%% \footnote{It should be noted also that the behavioural preorder of
+%% \cite{DBLP:conf/fsttcs/CastellaniH98} relies on acceptance sets,
+%% while the one given in  \cite[Definition 5.8]{DBLP:phd/us/Thati03}
+%% relies on $\Must$-sets, so anyhow the proof of Theorem 5.3 should not
+%% follow from the one by Castelanni and Hennessy, but rather from the
+%% one of \cite{DBLP:journals/iandc/BorealeNP02}.}.
+%%%%%%%%% ILARIA: moved earlier 23/11/23 %%%%%%%%%%%%%%%%%%%
+% On the Internet, though, communication is {\em asynchronous}, because so is
+% the standard TCP transmission; actor languages like
+% \textsc{Elixir} and \textsc{Erlang} implement asynchrony via mailboxes, and
+% both \textsc{Python} and \textsc{Javascript} offer developers the \textsc{async/wait}
+% constructs, to return promises (of results) or to wait for them.
+% The reality is thus in stark contrast with the state in which the
+% existing theory of~$\testleqS$ lays, and calls for a solid study of
+% this preorder in an asynchronous setting, via tools fit to make us
+% tame the lengthy (and at times tedious) proofs about semantics of
+% programming languages.
+% To provide such a foundation, we mechanise our work in the Coq proof
+% assistant.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\subsection*{Contributions} 
+This paper
+\begin{itemize}
+\item Proves that the results of \cite{} hold independently
+  from the nature of the LTS actions. The results of 
+  \cite{} ass well as the theorems by De Nicola and Hennessy (here \ref{AAA}
+  and \ref{AAA}) 
+  are corollaries of our more general theorems (\ref{} and \ref{}).
+  This is the first 
+  constructive and machine-checked account of the De Nicola and
+  Hennessy's classical results.
+  
+\item Characterises the traces that are actually relevant in the
+  completeness arguments (\ref{AAA}),
+  thereby tackling the universal
+  quantification on traces.
+
+\item Provides a novel co-inductive characterisation of
+  the MUST-preorder, which reduces the amount of actions
+  to be check in order to prove that a program $q$ refines
+  a program $p$ (\ref{}).
+  
+\item Discusses a use-case in which we prove that two servers
+  are related by the MUST-preorder (\ref{}).
+\end{itemize}

@@ -1,0 +1,268 @@
+\begin{figure}[t]
+\hrulefill
+\begin{center}
+  \begin{tabular}{c@{\hskip 20pt}c}
+\begin{tikzcd}
+p
+\arrow[r, "\aa"]
+&
+p_1 \arrow[d, "\ab"]
+\\
+&
+p_3
+\end{tikzcd}
+implies
+\begin{tikzcd}
+p
+\arrow[r, "\aa"]
+\arrow[d, "\ab"]
+&
+p_1 \arrow[d, "\ab"]
+\\
+p_2 \arrow[r, "\aa"]
+&
+p_3
+\end{tikzcd}
+
+& %% SECOND AXIOM
+
+$ \state $ implies  $\state \st{ \aa } \stateA$
+\\[5pt]
+\restrictedinputcommutativity  &  \inputreceptivity
+  \end{tabular}
+%% For every $p$ and $\aa,\ab \in \Names$,
+%% for some $p_2$.
+\end{center}
+\caption{The \inputreceptivity axiom of \cite{DBLP:conf/concur/Selinger97},
+  and our version of input-commutativity, which allows swapping only
+  consecutive inputs.}
+\label{fig:restricted-input-commutativity}
+\hrulefill
+\end{figure}
+
+
+%%%% MOVED TO THE MAIN BODY
+%\section{Traces in normal form and further alternative characterisations}
+%\label{sec:normal-form}
+
+%As hinted at in the main body of the paper, we characterise the \mustpreorder
+%using only the causal order of actions on traces. In this appendix we outline
+%the necessary constructions and our reasoning. All the results are mechanised.
+%%% \begin{definition}[Trace-based behavioural preorder \coqMT{alt_preorder}]
+%%% \label{def:ff-good}%
+%%% \label{def:bhv-leq}%
+%%% Let $p \bhvleq q$ if for every $s \in \Actfin \wehavethat p \acnvalong{s}$ implies that
+%%% \begin{enumerate}[(i)]
+%%% \item\label{pt:ff4-conv} $q \acnvalong{s}$,
+%%% \item\label{pt:ff4-acc-sets} %
+%%%   for every $R \in \acc{q}{s}$,
+%%%   and every
+%%%   $\I \in \MI$ such that $\disjoint{\I}{R}$ and $p \acnvalong{s.\I}$,
+%%%   there exists some $O \in \gas{p}{s}{\I}$
+%%%   s.t. $O \subseteq \union{R}{\co{\I}}$.~\hfill$\blacksquare$%\GBf{Write example that shows that if we consider also infinite $\I$ then the definition is incomplete.}
+%%% \end{enumerate}
+%%% \end{definition}
+
+
+%%% Note that this definition differs from \cite[Definition
+%%%   5]{DBLP:conf/fsttcs/CastellaniH98}, thanks to the requirement
+%%% $p \acnvalong{s.\I}$ in \rpt{ff4-acc-sets}. This condition
+%%% is necessary to prove our first result,
+
+
+%Let $\chopSym : \Actfin \longrightarrow ( \MI \times \MO )^\star$ %(\coqNorm{normalize})
+%be the function % such that
+%$$
+%\chop{ \trace } = (\I_0, M_0),( \I_1, M_2), \ldots , (\I_n,M_n)
+%$$
+%which is defined inductively in \rfig{nf-trace-def}.  The
+%intuition is that given a trace $\trace$, the function $\chopSym$
+%forgets the orders of actions in sequences of consecutive inputs, and
+%in sequences of consecutive outputs, thereby transforming them in
+%multisets. On the other hand $\chopSym$ preserves the order
+%among these sequences, for instance
+%$$
+%\chop{ c\aa\co{bdd}\aa\co{ef}e} =
+%(\mset{c, \aa}, \mset{\co{\ab},\co{d},\co{d}}),
+%(\mset{\aa}, \mset{\co{e},\co{f}}),
+%(\mset{e},\varnothing)
+%$$
+%%The function $\chopSym$ is defined inductively in \rfig{nf-trace-def}.
+
+%\begin{figure}[t]
+%  \hrulefill
+%$$
+%\begin{array}{rcl}
+%  \chopSym(\varepsilon) & = & \varepsilon \\[3pt]
+%  \chopSym(s) & = & \chopSym'(s, \varnothing, \varnothing) \\[10pt]
+
+%  \chopSym'(\varepsilon, I, M) & = & (I,M) \\[3pt]
+%  \chopSym'(\co{\aa}.b.s, I, M) & = & (I, \mset{\aa} \uplus M), \chopSym'(s, \mset{b}, \varnothing)\\[3pt]
+%  \chopSym'(\aa.s, I, M) & = & \chopSym'(s, \mset{\aa} \uplus I, M)\\[3pt]
+%  \chopSym'(\co{\aa}.s, I, M) & = & \chopSym'(s, I, \mset{b} \uplus M)
+
+%\end{array}
+%$$
+
+%  \caption{Definition of the trace normalization function $\chopSym$}
+%  \label{fig:nf-trace-def}
+%  \hrulefill
+%\end{figure}
+
+%Let $\sigma$ range over the set $( \MI \times \MO )^\star$. We
+%say that $\sigma$ is a trace in {\em normal form}, and we write
+%$ p \wt{ \sigma } q$, whenever there exists $\trace \in \Actfin$
+%such that $ p \wt{ \trace } q$ and $\chop{\trace} = \sigma $.
+
+
+
+
+
+%%% Let $[ t ] = \setof{ s \in \Actfin }{ \chop{t} = \chop{s} } $.
+%%% For example we have
+%%% $$
+%%% \begin{array}{lll}
+
+%%% [ \co{\aa}\co{\aa}\co{\ab} ] & = & \set{  \co{\aa} \co{\aa} \co{\ab} ,  \co{\aa} \co{\ab} \co{\aa}, \co{\ab} \co{\aa} \co{\aa}}\\
+
+%%% [ \co{\aa}\co{\ab} c \co{c}\co{d} ] & = & \set{  \co{\aa}  \co{\ab} c \co{c}\co{d},    \co{\ab} \co{\aa} c \co{d}\co{c},  \co{\ab} \co{\aa}   \co{c}  \co{d} \co{c},  \co{\ab} \co{\aa}  c\co{d}\co{c}  }
+%%% \end{array}
+%%% $$
+%%% We have that
+%%% $$
+%%% \forevery \trace \in [ \traceA ] \wehavethat [\trace] = [ \traceA ]
+%%% $$
+
+
+
+%We lift in the obvious way the predicates $\bhvleqone, \bhvleqtwo, $
+%and $\asleqAfw$ to traces in nformal forms.
+%For every $\genlts_\StatesA, \genlts_\StatesB$ and $\serverA \in \StatesA, \serverB \in \StatesB$ let
+%\begin{itemize}
+%  \item 
+%    $\serverA \asynleqone \serverB$
+%    to mean 
+%  $\forall \sigma \in (\MI \times \MO)^\star \wehavethat \serverA \cnvalong{ \sigma }$
+%    implies $\serverB \cnvalong{ \sigma }$,
+
+%    \item 
+%      $\serverA \asynleqtwo \serverB$ to mean
+%      $\forall \sigma \in (\MI \times \MO)^\star \wehavethat \serverA \acnvalong{\sigma}$
+%      implies $\accht{ \serverA }{ \sigma } \ll \accht{ \serverB }{ \sigma }$,
+      
+%    \item
+%      $\serverA \preccurlyeq^{\asyn}_{\textsc{ms}} \serverB$
+%      to mean
+%      $\forall \sigma \in (\MI \times \MO)^\star \wehavethat \serverA \cnvalong{ \sigma }$
+%      implies that if $
+%\forall L . \after{\serverA}{ \sigma }{ \st{}_\StatesA} \mathrel{\opMust} L$ then $\after{\serverB}{\sigma}{\st{}_\StatesB} \mathrel{\opMust} L$
+%\end{itemize}
+
+%\begin{definition}%[Multiset-based behavioural preorder]% \coqMT{asynch_pre} ]
+%  \label{def:asyn-leq}%
+%  Let
+%  \begin{itemize}
+%  \item $\serverA \asleqNF \serverB$ whenever
+%    $\serverB \asynleqone \serverA  \wedge  \serverA \asynleqtwo \serverB$,
+    
+%  \item
+%    $ \serverA \msleqNF \serverB$ whenever $ \serverB \asynleqone
+%    \serverA  \wedge  \serverA \preccurlyeq^{\asyn}_{\textsc{ms}} \serverB$.\hfill$\blacksquare$
+%  \end{itemize}
+%\end{definition}
+
+
+%If an LTS is of forwarders, \ie $\genlts \in \obaFW$, the transition relation $\st{}$ is {\em input-receptive}
+%(Axiom (IB4), Table 2 of \cite{DBLP:conf/concur/Selinger97}),
+%and in \rlem{weak-a-swap} we prove that it enjoys a restricted version
+%of \restrictedinputcommutativity, and that so does its weak version.
+%Sequences of input actions $s \in \Names^\star$ enjoy a form of
+%diamond property in $\wt{}$. The crucial fact pertains consecutive input actions.
+%%\ilacom{In all permutation equivalences I know, one may only commute independent \emph{consecutive} actions.}
+
+
+%%% \gb{Move into preliminaries}
+%%% \begin{lemma}[\coqNorm{weak_swap_output}]
+%%%   \label{lem:weak-a-swap}
+%%%   For every $\mu \in \co{\Names}$ and $\alpha \in \Act$
+%%%   if $p \wt{\mu.\alpha} q$
+%%%   then $p \wt{\alpha.\mu} \cdot \equiv q$.
+%%% \end{lemma}
+
+
+%\begin{lemma}%[\coqNorm{weak_a_swap_input_input}]
+%  \label{lem:weak-a-swap}
+%  For every $\genlts_\States \in \obaFW$, every $\serverA, \serverB \in \States$ and every $\aa, \ab \in \Names$,
+%  if $p \wt{\aa.\ab} q$ then $p \wt{\ab.\aa} \cdot \simeq q$.
+%\end{lemma}
+%%% \begin{proof}%[Proof of \rlem{weak-a-swap} (\coqConv{weak_a_congr_swap})]
+%%% We fix a process $q$ such that $p \wt{\aa.\ab} q$, and
+%%% decompose the transitions in the following manner,
+%%% \begin{equation}
+%%% \label{eq:weak-a-swap}
+%%% p \wt{\varepsilon} p_1 \sta{\aa} p_2 \wt{\varepsilon} q_1 \sta{\ab} q_2 \wt{\varepsilon} q
+%%% \end{equation}
+%%% We must show that $p \wt{\ab.\aa} \cdot \equiv q$ and thanks to
+%%% $ p \wt{\varepsilon} p_1$ it suffices to prove that $p_1 \wt{\ab.\aa} \cdot \equiv q$.
+%%% Since by $\ab$ is an input, we know by definition that $ p_1 \sta{\ab} p_1 \Par \mailbox{ \co{\ab} }$,
+%%% it is therefore enough to prove $p_1 \Par  \mailbox{\co{\ab}} \wt{\aa} \cdot \equiv q$.
+%%% Thanks to (\ref{eq:weak-a-swap}) $  q_1 \wt{\ab} q  $, and by definition $ \mailbox{ \co{\ab} } \st{\co{\ab}} \Nil $,
+%%% an application of \rptlem{zipping}{zipping-weak} ensures that $q_1 \Par  \mailbox{ \co{\ab} } \wt{} \cdot \equiv q $.
+%%% To arrive at our original goal it suffices therefore to prove $ p_1 \Par  \mailbox{ \co{\ab}} \wt{\aa} q_1 \Par  \mailbox{ \co{\ab} }$.
+%%% Again thanks to (\ref{eq:weak-a-swap}) it is enough to prove
+%%% $$
+%%% p_1 \Par  \mailbox{ \co{\ab} } \wt{\aa} p_2 \Par  \mailbox{ \co{\ab}}
+%%% $$
+
+%%% We show this reasoning by case-analysis on why the transition $p_1 \sta{\aa} p_2$ exist.
+%%% If $p_1 \st{\aa} p_2$ then $  p_1 \Par  \mailbox{\co{\ab}}  \wt{\aa}  p_2 \Par  \mailbox{\co{\ab}} $.
+%%% If $p_1 \Nst{\aa} p_2$ then  \rdefptNOPAR{sta}{sta-asynch-input} guarantees that $p_2 \equiv p_1 \Par  \mailbox{\co{\aa}}$,
+%%% and we conclude in three steps,
+%%% $$
+%%% \begin{array}{lllr}
+%%% %  p_1 & \sta{\ab} & p_1 \Par \co{\ab} & \text{By definition of \sta{\ab}} \\
+%%%  p_1 \Par  \mailbox{\co{\ab}}  & \sta{\aa} & p_1 \Par  \mailbox{\co{\ab} \Par \co{\aa}} & \text{By definition of \sta{\aa}} \\
+%%%   & \equiv & p_1 \Par  \mailbox{\co{\aa} \Par \co{\ab}} & \text{Commutativity} \\
+%%%   & \equiv & p_2 \Par  \mailbox{\co{\ab}} & \text{Because }p_2 \equiv p_1 \Par \co{\aa}
+%%% \end{array}
+%%% $$
+%%% \end{proof}
+
+
+%\rlem{weak-a-swap}, together with an induction on traces, allows
+%us to prove that $\chopSym$ preserves convergence and acceptance sets.
+
+%\begin{lemma}
+%  \label{lem:normalisation-preserves-predicates}
+%  For every $\genlts_\States \in \obaFW$, every $\server \in \States$ and
+%  every $\trace \in \Actfin$ and  we have that
+%  \begin{enumerate}
+%  \item %(\coqNorm{normalize_wta})
+%    $ p \wt{ \trace } q$ iff $ p \wt{ \chop{\trace} } \cdot \simeq q$,
+%    and if the first trace does not pass through a successful state then the normal form does not either,
+%  \item %(\coqNorm{normalize_acnv})
+%    $ p \acnvalong{\chop{\trace} }$ iff $ p \acnvalong{ \trace }$,
+%  \item %(\coqNorm{normalize_accs})
+%    $ \accht{p}{ \trace } = \accht{p}{ \chop{\trace} }$.
+%%  \item if $p \wt{\trace}$ then $  \acc{p}{ \mathsf{chop}(\trace) } \subseteq \acc{p}{ \trace } $.
+%  \end{enumerate}
+%\end{lemma}
+%\noindent
+%%% \ilacom{the formulation of the first property is a bit sloppy: who
+%%%   guarantees that success is not on the side of the server? Also,
+%%%   ``happy state'' should be replaced by ``successful state''.}
+
+%We thereby obtain two other characterisations of the contextual preorder~$\testleqS$:
+%\rthm{testleqS-equals-bhvleq} and \rlem{normalisation-preserves-predicates} ensure that the
+%preorders~$\testleqS, \asleqNF,$ and $\msleqNF$~coincide.
+%\begin{corollary}%[\coqMT{asyn_iff_bhv}]
+%  \label{cor:asynleq-equals-bhvleq}
+%  For every $\genlts_\StatesA, \genlts_\StatesB \in \obaFB$,
+%  every $\serverA \in \StatesA$ and $\serverB \in \StatesB$,
+%  the following facts are equivalent:
+%  \begin{enumerate}
+%  \item $\serverA \testleqS \serverB$,
+%  \item $\liftFW{\serverA} \asleqNF \liftFW{\serverB}$,
+%  \item $\liftFW{\serverA} \msleqNF \liftFW{\serverB}$.
+%  \end{enumerate}
+%\end{corollary}

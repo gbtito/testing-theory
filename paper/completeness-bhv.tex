@@ -1,0 +1,530 @@
+\section{Completeness}
+
+\begin{table*}
+  \hrulefill\\
+
+  % \begin{tabular}{l}
+    \begin{minipage}{300pt}%
+      $\forall \trace \in \Actfin, \forall \aa \in \Names,$
+      \begin{enumerate}[(1)]
+      \item
+        \label{gen-spec-ungood}
+        $ \lnot \good{f(\trace)}$
+      \item
+        \label{gen-spec-mu-lts-co}
+        $ \forall \mu \in \Act, f (\mu.\trace) \st{\co{\mu}} f(\trace)$
+      \item
+        \label{gen-spec-mu-out-ex-tau}
+        $ f (\co{a}.\trace) \st{\tau} $
+      \item
+        \label{gen-spec-out-good}
+        $ \forall \client \in \States, f (\co{a}.\trace)
+        \st{\tau} \client$ implies $\good{ \client }$
+      \item
+        \label{gen-spec-out-mu-inp}
+        $ \forall \client \in \States, \mu \in \Act,$
+        $f (\co{a}.\trace) \st{\mu} \client$ implies $\mu = \aa$ and
+        $\client = f(s)$
+      \end{enumerate}
+    \end{minipage}
+    \\[2em]
+    \begin{minipage}{300pt}
+      $\forall E \subseteq \Names$,
+      \begin{enumerate}[(t1)]
+      \item\label{gen-spec-acc-nil-stable-tau}
+        $\testacc{\varepsilon}{E} \Nst{\tau}$
+      \item\label{gen-spec-acc-nil-stable-out}
+        $\forall \aa \in \Names, \testacc{\varepsilon}{E} \Nst{\co{\aa}}$
+      \item\label{gen-spec-acc-nil-mem-lts-inp}
+        $\forall \aa \in \Names, \testacc{\varepsilon}{E} \st{\aa}$ if and only if
+        $\aa \in E$
+      \item\label{gen-spec-acc-nil-lts-inp-good}
+        $\forall \mu \in \Act, \client \in \States,
+        \testacc{\varepsilon}{E} \st{\mu} \client$ implies $\good{\client}$
+      \end{enumerate}
+    \end{minipage}
+  % \end{tabular}
+  \\[2em]
+   %%%%%%%%
+  %%%%%%%% HORIZONTAL LAYOUT BY GIO
+ %%%%%%%%
+%% %% \multicolumn{3}{l}{%
+%%   \begin{enumerate}[(c1)]
+%% \item
+%%   $\forall \mu \in \Act, \testconv{\varepsilon} \Nst{\mu}$ \qquad\qquad
+%% \item
+%%   $\testconv{\varepsilon} \st{\tau} $ \qquad\qquad
+%% \item
+%%   $\forall \client, \testconv{\varepsilon} \st{\tau} \client$ implies
+%%   $\good{ \client }$
+%%   \end{enumerate}
+%%   \\[7pt]
+%% %%  }
+  %%%%%%%%
+  %%%%%%%% VERTICAL LAYOUT BY ILARIA
+  %%%%%%%%
+    % \begin{tabular}{c}
+      \begin{minipage}{300pt}
+      \begin{enumerate}[(c1)]
+      \item
+        $\forall \mu \in \Act, \testconv{\varepsilon} \Nst{\tau}$ \qquad
+      \item
+        $\exists \client, \testconv{\varepsilon} \st{\tau} \client$ \qquad
+      \item
+        $\forall \client, \testconv{\varepsilon} \st{\tau} \client$ implies
+        $\good{ \client }$
+        \\
+      \end{enumerate}
+      \end{minipage}
+    % \end{tabular}
+  %%%%%%%%
+%%%%%%%% VERTICAL LAYOUT BY ILARIA
+%%%%%%%%
+  \caption{Properties of the functions that generate clients.}
+\hrulefill
+\label{tab:properties-functions-to-generate-clients}
+\end{table*}
+
+
+\label{sec:bhv-completeness}
+This section outlines the proof that the alternative preorder
+given in \rdef{accset-leq} is included in the \mustpreorder.
+Proofs of completeness of this kind usually require using syntactic
+contexts. Our calculus-independent setting, though, does not allow us to
+define them.  Instead we phrase our arguments using two functions
+$
+\testconvSym :  \Actfin \rightarrow \States,$ and
+$\testaccSym :  \Actfin \times \parts{\Names} \rightarrow \States$
+where \lts{ \States }{L}{ \st{} } is some LTS of \obaFB.
+In \rtab{properties-functions-to-generate-clients} we gather all the
+{\em properties} of~$\testconvSym$ and~$\testaccSym$ that are sufficient to give our
+arguments. The properties (1) - (5) must hold for both~$\testconvSym$ and
+$\testacc{\varepsilon}{-}$ for every set of names~$O$, the properties (c1) -
+(c2) must hold for~$\testconvSym$, and (t1) - (t4) must hold for~$\testaccSym$.
+
+We use the function~$\testconvSym$ to test the convergence of servers, and the
+function~$\testaccSym$ to test the acceptance sets of servers.
+
+A natural question is whether such~$\testconvSym$ and~$\testaccSym$ can actually exist.
+The answer depends on the LTS at hand. In \rapp{client-generators},
+and in particular \rfig{client-generators}, we define these functions for
+the standard LTS of~\ACCS, and it should be obvious how to adapt those
+definitions to the asynchronous $\pi$-calculus \cite{DBLP:journals/jlp/Hennessy05}.
+%\pl{Two times obvious in this par. Maybe we could simply link
+%  papers that define test generators for the $\pi$-calculus}.
+
+In short, our proofs show that~$\asleq$ is complete wrt~$\testleqS$
+in any LTS of output-buffered agents with feedback wherein the
+functions~$\testconvSym$ and~$\testaccSym$ enjoying the properties in
+\rtab{properties-functions-to-generate-clients} can be defined.
+
+
+%%Instead, we define sets of properties the test generators must obey to.
+%% \begin{definition}
+%% We first define the properties that must be respected by the test generators
+%% we rely on in this section.
+
+%% Given a test generator $f : \Actfin \rightarrow \States$,
+%% we write $\mathcal{M} \Vdash f(\trace}$ if
+
+
+%% We now define the properties that must be respected
+%% by the test generator used to test the convergence of
+%% a server along a trace.
+
+%% Given a test generator $c : \Actfin \rightarrow \States$,
+%% we write $\mathcal{C} \Vdash \testconv{\trace}$ if
+%% $\mathcal{M} \Vdash \testconv{\trace}$ and $c$ obey to these properties.
+
+%% We now define the properties that must be respected by the test generator
+%% used to test the acceptance-sets of a server.
+
+%% Given a test generator $a : \set{\Names} \times \Actfin \rightarrow \States$,
+%% we write $\mathcal{A} \Vdash \testacc{O}{\trace}$ if for any $O \subseteq \Names$ and $s \in \Actfin$,
+%% $\mathcal{M} \Vdash \testacc{O}{\trace}$ and $a$ respects the following properties.
+
+
+
+%% For the sake of clarity, we first provide the reader                     %%
+%% with two test generators that obey the axioms and can be                 %%
+%% are usually defined in the litterature                                   %%
+%% when proving completeness in the context of ACCS. \rfig{test-generators} %%
+%% \begin{example}                                                          %%
+%% \testconv{\trace} = ...                                                               %%
+%% a(s,O) = ...                                                             %%
+%% \end{example}                                                            %%
+%%                                                                          %%
+%% \begin{lemma}                                                            %%
+%% The two test generators obey to the axioms                               %%
+%% \end{lemma}                                                              %%
+
+
+%% This section is then parameterized by two test generators
+%% $\testconv{\trace}$ and $a(O,\trace}$ such that $\mathcal{C} \Vdash \testconv{\trace}$
+%% and $\mathcal{A} \Vdash a(s, O)$ hold.
+
+
+\renewcommand{\States}{\ensuremath{A}}
+
+
+First, converging along a finite trace~$\trace$~is logically
+equivalent to passing the client~$\testconv{ \trace}$.  In other
+words, there exists a bijection between the proofs (i.e. finite
+derivation trees of~$\musti{ \server }{\testconv{ \trace}}$) and
+the ones of~$ \server \cnvalong{ \trace }$. We first give the
+proposition, and then discuss the auxiliary lemmas to prove it.
+
+\begin{proposition}\coqCom{must_iff_acnv}%{myproposition}{mustiffacnv}
+  \label{prop:must-iff-acnv}
+  For every $\genlts_{\States} \in \obaFW$,
+  $\server \in \States$, and
+  $\trace \in \Actfin$ we have that $\musti{\server}{ \testconv{ \trace} }$
+  if and only if~$\server \cnvalong \trace$.
+\end{proposition}
+\noindent
+%\begin{proof}
+The {\em if} implication is \rlem{acnv-must} and the {\em only if}
+implication is \rlem{must-cnv}.
+  %\end{proof}
+\noindent
+The hypothesis that $\genlts_{\States} \in \obaFW$,
+\ie the use of forwarders, is necessary to show that convergence
+implies passing a client, as shown by the next example.
+\begin{example}
+    \label{ex:forwarders-necessary}
+    Consider a server~$\server$ in an LTS $\genlts \in \obaFB$
+%    with, in the set $\StatesA$,
+%    a state~$\server$, % that can input on~$\ab$ and then diverges.
+    whose behaviour amounts to the following transitions:
+    $\server \st{ \ab } \Omega \st{ \tau }  \Omega \st{ \tau } \ldots$
+    Note that this entails that $\genlts$ does not
+    {\em not} enjoy the axioms of forwarders.
+
+    Now let $ \trace = \aa.\ab $. Since $\server \conv$ and $\server
+    \Nwt{\aa}$ we know that $ \server \cnvalong \aa.\ab$.
+    On the other hand \rtab{properties-functions-to-generate-clients}(\ref{gen-spec-mu-lts-co})
+    implies that the client $\testconv{\trace}$ performs the transitions
+    $\testconv{ \trace } \st{ \co{\aa}} \testconv{ \ab }  \st{ \co{\ab}} \testconv{ \varepsilon }$.
+    Thanks to the \outputcommutativity axiom we obtain $\testconv{ \trace } \st{ \co{\ab}} \st{ \co{\aa}} \testconv{ \varepsilon }$.
+    \rtab{properties-functions-to-generate-clients}(\ref{gen-spec-ungood}) implies that the states
+    reached by the client are unsuccessful, and so by zipping the traces performed
+    by $\server$ and by $\testconv{\trace}$
+    we build a maximal computation of
+    $\csys{\server}{\testconv{\trace}}$ that is unsuccessful,
+    and thus $\Nmusti{\server}{\testconv{\trace}}$.\hfill$\qed$
+  \end{example}
+  \noindent
+  This example explains why in spite of \rlem{musti-obafb-iff-musti-obafw}
+  output-buffered agents with feedback do not suffice to use the
+  standard characterisations of the \mustpreorder.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% ARGUMENTS ABOUT ACCEPTANCE SETS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+We move on to the more involved technical results, \ie the next
+  three lemmas, that we use to reason on acceptance sets of servers.
+  The proofs are deferred to \rapp{bar-induction} and \rapp{appendix-completeness},
+  but we wish to stress \rlem{must-output-swap-l-fw}.
+  It states that, when reasoning on~$\opMusti$,
+  outputs can be freely moved from the client to the server side of
+  systems, if servers %are forwarders.
+  have the forwarding ability.
+  Its proof uses {\em all} the axioms for output-buffered agents with
+  feedback, and the lemma itself is used in the proof of the main
+  result on acceptance sets, namely \rlem{completeness-part-2.2-auxiliary}.
+
+\begin{lemma}[ Output swap ]
+  \label{lem:must-output-swap-l-fw}
+  Let $\genlts_A \in \obaFW$ and
+  $\genlts_B \in \obaFB$.
+  $\Forevery \serverA_1, \serverA_2 \in \StatesA$,
+  every $\client_1, \client_2 \in \StatesB$ and name $\aa \in \Names$ such that
+  $\serverA_1 \st{\co{\aa}} \serverA_2$ and
+  $\client_1 \st{\co{\aa}} \client_2$,
+  if $\musti{\serverA_1}{\client_2}$ then $\musti{\serverA_2}{\client_1}$.
+\end{lemma}
+
+\begin{lemma}
+  \label{lem:completeness-part-2.2-diff-outputs}
+  Let $\genlts_A \in \obaFW$.
+  For every $\server \in \States$, $\trace \in \Actfin$,
+  and every $L, E \subseteq \Names$, if
+  $\co{L} \in \accht{ \server }{ \trace }$
+  then $\Nmusti{ \server }{ \testacc{\trace}{E \setminus L}}$.
+\end{lemma}
+
+
+
+\begin{lemma}\coqCom{must_gen_a_with_s}
+  \label{lem:completeness-part-2.2-auxiliary}
+  Let $\genlts_A \in \obaFW$.
+  $\Forevery \server \in \States, \trace \in \Actfin$,
+  and every finite set $\ohmy \subseteq \co{\Names}$,
+  if $\server \cnvalong s$ then either
+  \begin{enumerate}[(i)]
+      \item
+    %% \item\label{pt:completeness-crux-move-1} %%
+    $\musti{\server}{\testacc{ \trace }{ \bigcup \co{ \accht{p}{s}
+          \setminus \ohmy }}}$, or
+  \item
+   %% \item\label{pt:completeness-crux-move-2} %%
+    there exists $\widehat{\ohmy} \in \accht{ \server }{ \trace }$ such that $\widehat{\ohmy} \subseteq \ohmy$.
+  \end{enumerate}
+\end{lemma}
+
+\renewcommand{\traceA}{s_1}
+\renewcommand{\traceB}{s_2}
+
+%% \begin{lemma}%[\coqConv{acnv_weak_a_congr}]%{mylemma}{acnvsplits}                 %%
+%%  \label{lem:acnv-split-s}                                                         %%
+%%  For every $\traceA, \traceB \in \Actfin,$ and                                    %%
+%%  $\serverA, \serverB  \in \States$,                                               %%
+%%  if $\serverA \cnvalong \traceA.\traceB$ and $ \serverA \wta{ \traceA} \serverB$ %%
+%% then $\serverB \cnvalong \traceB$.                                               %%
+%% % $ (p \aftera \traceA)  \cnvalong \traceB$.                                     %%
+%% \end{lemma}                                                                       %%
+
+\renewcommand{\stateB}{q}
+\renewcommand{\traceB}{\traceC}
+
+\renewcommand{\traceA}{s_1}
+\renewcommand{\traceB}{s_2}
+\renewcommand{\traceC}{s_3}
+
+%% Now we gather the properties of the clients generated by the function~$g$~and~$c$. %%
+%% \begin{lemma}%[\coqCom{gen_test_reduces_if}]                                        %%
+%%   \label{lem:gen-reduces-if}                                                        %%
+%%   \label{lem:gs-reduces}                                                            %%
+%%   For every $\server \in \Proc$ and                                                 %%
+%%   $\trace \in \Actfin$, if $p \st{\tau}$ then $g(\trace, \server) \st{\tau}$.       %%
+%% \end{lemma}                                                                         %%
+%%%% ORIGINAL ARGUMENT
+%%%% DO NOT EREASE
+%% \begin{proof}
+%% The proof is by induction on the sequence $s$.
+%% In the base case $s = \varepsilon$. The test generated by $g$ is $p$,
+%% which reduces by hypothesis, and so does $g(\varepsilon,p)$.
+%% In the inductive case $s = \mu.s'$.
+%% We proceed by case-analysis on $\mu$.
+%% If $\mu$ is an output then $g(\mu.s', p) = \co{\mu}.(g(s', p)) \extc
+%% \tau.\Unit$ which reduces to $\Unit$ using
+%% the transition rule \extR.
+%% If $\mu$ is an input then $g(\mu.s', p) = \co{\mu} \Par g(s', p)$
+%% which reduces using the transition rule
+%% \parR and the inductive hypothesis, which ensures that
+%% $g(s', p)$ reduces.
+%% \leaveout{%
+%% and the hypothesis tells us that it reduces.
+%% In the inductive case $s = \mu.s'$ and our inductive hypothesis tells
+%% us that $g(s', p)$ reduces.
+%% We proceed by case-analysis on $\mu$.
+%% If $\mu$ is an input then $g(\mu.s', p) = \co{\mu} \Par g(s', p)$
+%% which reduces using the transition rule
+%% \parR and the inductive hypothesis.
+%% If $\mu$ is an output then $g(\mu.s', p) = \co{\mu}.(g(s', p)) \extc
+%% \tau.\Unit$ which reduces to $\Unit$ using
+%% the transition rule \extR.}
+%% \end{proof}
+%%%% ORIGINAL ARGUMENT
+%%%% DO NOT EREASE
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\renewcommand{\traceA}{s_1}
+\renewcommand{\traceB}{s_2}
+\renewcommand{\traceC}{s_3}
+
+
+
+
+
+%% \begin{lemma}%[\coqCom{must_gen_conv_wta_mu}]                                               %%
+%%   \label{lem:must-weak-a-mu}                                                                %%
+%%   For every $\mu \in \Act, \trace \in \Actfin$ and                                          %%
+%%   $\server \in \Proc \wehavethat  \musti{\server}{\testconv{\mu.\trace)}$                           %%
+%%   and $\server \wt{\mu} \server'$ imply that %$\musti{ (\server \aftera \mu) }{\testconv{\trace)}$. %%
+%%   $\musti{ \server' }{\testconv{\trace)}$.                                                          %%
+%% \end{lemma}                                                                                 %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%% ORIGINAL ARGUMENT
+%%%%%%%% DO NOT DELETE
+%% \begin{proof}
+%%   We have to show that $q \musti \testconv{\trace}$ for every $q$ such that $p \wta{\mu} q$.
+%%   Pick such $q$, and decompose the weak transition $p \wta{\mu} q$ as
+%%   follows,
+%%   $$
+%%   p \wta{\varepsilon} \widehat{p} \sta{\mu} \widehat{q} \wta{\varepsilon} q
+%%   $$
+
+%%   We proceed by induction on the derivation of $p \wta{\varepsilon} \widehat{p}$.
+
+%%   In the base case $p = \widehat{p}$.
+%%   Since $\testconv{ \mu.s ) \Nst{\ok}$ and  $\testconv{\mu.\trace} \st{\co{\mu}} \testconv{\trace}$\footnote{This fact follows directly from the definition of $\testconv{\trace}$, and formally we use \rlem{inversion-gen-mu}},
+%%   \rlem{musti-presereved-by-actions-of-unsuccesful-tests}
+%%   ensures that $\widehat{q} \musti \testconv{\trace}$.
+%%   \rlem{must-lts-a-tau} together with an induction on
+%%   the derivation of $\widehat{q} \wta{\varepsilon} q$
+%%   ensure that $\tmusti{q}{\testconv{\trace}}$ as required.
+
+
+%%   In the inductive case there exists $p'$ such that
+%%   $p \sta{\tau} p' \wta{\varepsilon} \widehat{p}$ and that
+%%   $$
+%%   p \sta{\tau} p' \wta{\varepsilon} \widehat{p} \sta{\mu} \widehat{q} \wta{\varepsilon} q
+%%   $$
+%%   The inductive hypothesis esures that
+%%   $\tmusti{p'}{\testconv{\mu.\trace}}$ implies $\tmusti{q}{\testconv{\trace}}$,
+%%   and thus we obtain $\tmusti{q}{\testconv{\trace}}$ via an application of
+%%   \rlem{must-lts-a-tau}.
+%% \end{proof}
+%%%%%%%% DO NOT DELETE
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+%% First we give sufficient conditions for a server                                                                         %%
+%% not to satisfy a client generated by the function $\testacc{-}{-}$, then                                                    %%
+%% we discuss \rlem{completeness-part-2.2-diff-outputs}. The other proofs                                                   %%
+%% are in \rapp{appendix}.                                                                                                  %%
+%%                                                                                                                          %%
+%%                                                                                                                          %%
+%% \begin{lemma}                                                                                                            %%
+%%   \label{lem:gen-test-unhappy-if}                                                                                        %%
+%%     \label{lem:gen-test-lts-co-mu}                                                                                       %%
+%%   For every $\client \in \Proc$ and $\trace \in \Actfin$,                                                                %%
+%%   \begin{enumerate}                                                                                                      %%
+%%   \item %(\coqCom{gen_test_unhappy_if})                                                                                  %%
+%%     \label{pt:gen-test-unhappy-if}   if $\lnot \good{\client}$ then                                                      %%
+%%   $\lnot \good{g( \trace , \client )}$,                                                                                  %%
+%%   \item %(\coqCom{gen_test_lts_mu})                                                                                      %%
+%%     \label{pt:gen-test-lts-co-mu} for every $\mu \in \Act$,  $g(\mu.\trace, \client) \st{\co{\mu}} g(\trace , \client)$. %%
+%%   \end{enumerate}                                                                                                        %%
+%% \end{lemma}                                                                                                              %%
+
+
+We can now show that the alternative preorder~$\asleq$
+includes~$\testleqS$ when used over LTSs of forwarders.
+\begin{lemma}%, \coqCom{completeness}]
+  \label{lem:completeness}
+  For every $\genlts_A, \genlts_B \in \obaFW$ and
+  servers $\serverA \in \StatesA, \serverB \in \StatesB $,
+  if ${ \serverA } \testleqS { \serverB }$
+  then ${ \serverA } \asleq { \serverB }$.
+\end{lemma}
+\begin{proof}
+  Let ${ \serverA } \testleqS { \serverB }$.
+  To prove that ${ \serverA } \bhvleqone { \serverB }$,
+  suppose
+  ${\serverA} \cnvalong \trace$ for some trace $\trace$.
+  \rprop{must-iff-acnv} implies $\musti{ {\serverA} }{\testconv{ \trace} }$,
+  and so by hypothesis $ \musti{ { \serverB } }{\testconv{ \trace }}$.
+  \rprop{must-iff-acnv} ensures that ${\serverB} \cnvalong \trace$.
+
+  We now show that ${ \serverA } \bhvleqtwo { \serverB }$.
+  Thanks to
+  \rlem{conditions-on-accsets-logically-equivalent}, it is enough to prove
+  that $\serverA \asleqAfw \serverB$. So, we show that
+  for every trace $\trace \in \Actfin$, if ${ \serverA } \acnvalong \trace$
+  then $\accht{{ \serverA }}{\trace} \ll
+  \accht{{ \serverB }}{\trace} $.
+  Fix an $O \in \accht{ {\serverB} }{ \trace }$.
+  We have to exhibit a set $\widehat{O} \in \accht{{ \serverA
+  }}{\trace}$ such that $\widehat{O} \subseteq O$.
+
+
+  By definition $O \in \accht{ {\serverB} }{ \trace }$
+  means that for some $q'$ we have ${\serverB} \wt{ \trace } q' \stable$
+  and $O(\serverB') = O$.
+  Let $E = \bigcup \accht{ { \serverA }}{\trace}$ and $X = E \setminus O $.
+  The hypothesis that ${\serverA}~\cnvalong~\trace$,
+  and the construction of the set~$X$
+  let us apply \rlem{completeness-part-2.2-auxiliary}, which implies that
+  either \begin{enumerate}[(a)] \item
+  $\musti{{\serverA}}{\testacc{\trace}{ \co{ X }}}$, or
+  \item there exists
+  a $\widehat{O} \in \accht{{ \serverA }}{\trace}$ such that $\widehat{O}
+  \subseteq O(\serverB')$.
+  \end{enumerate}
+  Since (b) is exactly what we are after, to conclude the
+  argument it suffices to prove that (a) is false.
+  This follows from \rlem{completeness-part-2.2-diff-outputs}, which proves
+  $\Nmusti{ {\serverB}  }{ \testacc{ \trace }{ \co{ X }} }$,
+  and the hypothesis ${ \serverA } \testleqS { \serverB }$,
+  which ensures  $\Nmusti{ {\serverA}  }{ \testacc{ \trace }{ \co{ X }} }$.
+\end{proof}
+
+The fact that the \mustpreorder can be captured via the function $\liftFW{-}$
+and $\asleq$ is a direct consequence of \rlem{musti-obafb-iff-musti-obafw}
+and \rlem{completeness}.
+\begin{proposition}[Completeness]%, \coqCom{completeness}]
+  \label{prop:bhv-completeness}
+  For every $\genlts_A, \genlts_B \in \obaFB$ and
+  servers $\serverA \in \StatesA, \serverB \in \StatesB $,
+  if $\serverA \testleqS \serverB$ then $\liftFW{ \serverA } \asleq \liftFW{ \serverB }$.
+\end{proposition}
+%%%%%
+  %%%%%%%%%%%%%%%%%%%%%%%%% OLD PROOF FOR LICS. DO NOT EREASE BEFORE DEADLINE
+  %%%%%%%%%%%%%%%%%%%%%%%%%
+%%\begin{proof}
+  %% We have to prove the following set inclusions
+  %% \begin{align}
+  %%   {\testleqS} & \subseteq {\bhvleqone} \tag{cmp-1 \coqCom{completeness1}}\\
+  %%   {\testleqS} & \subseteq {\bhvleqtwo} \tag{cmp-2 \coqCom{completeness2}}
+  %% \end{align}
+  %% To prove the first inclusion, suppose
+  %% $\serverA \testleqS \serverB$ and $\liftFW{\serverA} \cnvalong \trace$ for some trace $\trace$.
+  %% \rprop{must-iff-acnv} implies
+  %% $\musti{ \liftFW{\serverA} }{\testconv{ \trace}}$.
+  %% \rlem{musti-obafb-iff-musti-obafw} implies that $ \musti{ \serverA }{\testconv{ \trace }} $,
+  %% thus the hypothesis implies that $\musti{ \serverB }{\testconv{ \trace }}$.
+  %% Applying again \rlem{musti-obafb-iff-musti-obafw} and
+  %% \rprop{must-iff-acnv} we obtain $\liftFW{ \serverB } \cnvalong \trace$.
+  %%
+  %% To prove the second inclusion, thanks to
+  %% \rlem{conditions-on-accsets-logically-equivalent} we have to explain
+  %% why for every trace $\trace \in \Actfin$ if $\liftFW{ \serverA } \acnvalong \trace$
+  %% then it is the case that $\accht{\liftFW{ \serverA }}{\trace} \ll
+  %% \accht{\liftFW{ \serverB }}{\trace} $.
+  %% Fix an $O \in \accht{ \liftFW{\serverB} }{ \trace }$.
+  %% We have to exhibit a set $\widehat{O} \in \accht{\liftFW{ \serverA
+  %% }}{\trace}$ such that $\widehat{O} \subseteq O$.
+  %%
+  %% By definition $O \in \accht{ \liftFW{\serverB} }{ \trace }$
+  %% means that for some $q'$ we have $\liftFW{\serverB} \wt{ \trace } q' \stable$
+  %% and $O(\serverB') = O$.
+  %% Let
+  %% %$ \mathcal{O}_{\serverA} =  \bigcup \setof{ O }{ O \in \accht{ \serverA }{ \trace } }$
+  %% $E = \bigcup \accht{ \liftFW{ \serverA }}{\trace}$
+  %% and $X = E \setminus O $.
+  %% The hypothesis of convergence, \ie that $\liftFW{\serverA}~\cnvalong~\trace$,
+  %% and the construction of the set~$X$
+  %% let us apply \rlem{completeness-part-2.2-auxiliary} which implies that
+  %% either \begin{enumerate}[(a)] \item
+  %% $\musti{\liftFW{\serverA}}{\testacc{\trace}{ \co{ X }}}$, or
+  %% \item there exists
+  %% a $\widehat{O} \in \accht{\liftFW{ \serverA }}{\trace}$ such that $\widehat{O}
+  %% \subseteq O(\serverB')$.
+  %% \end{enumerate}
+  %% Since (b) is exactly what we are after, to conclude the
+  %% argument it suffices to prove that (a) is false. This is done in
+  %% four steps:
+  %% we apply \rlem{completeness-part-2.2-diff-outputs} to prove
+  %% $\Nmusti{ \liftFW{\serverB}  }{ \testacc{ \trace }{ \co{ X }} }$,
+  %% then we apply
+  %% \rlem{musti-obafb-iff-musti-obafw} to obtain
+  %% $\Nmusti{\serverB}{ \testacc{ \trace }{ \co{ X }} }$. This fact together
+  %% with $\serverA \testleqS \serverB$ imply
+  %% $\Nmusti{ \serverA }{ \testacc{ \trace }{ \co{ X }} }$.
+  %% Applying again \rlem{musti-obafb-iff-musti-obafw} we conclude
+  %% $\Nmusti{ \liftFW{\serverA} }{ \testacc{ \trace }{ \co{ X }} }$.
+%%%\end{proof}

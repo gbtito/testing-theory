@@ -1,0 +1,862 @@
+\section{Related work}
+\label{sec:bisimulation}
+\label{sec:detailed-related-works}
+%%\subsection{Related and future work}
+%%\label{sec:stateoftheart}
+%%\label{sec:related-works}
+%%\label{sec:future-works}
+
+
+\paragraph{Contextual preorders in functional languages}
+Morris preorder is actively studied in
+the pure $\lambda$-calculus \cite{DBLP:conf/rta/BreuvartMPR16,DBLP:journals/lmcs/BreuvartMR18,DBLP:journals/lmcs/IntrigilaMP19,DBLP:books/cp/BarendregtM22}, %
+$\lambda$-calculus with references \cite{DBLP:conf/icalp/Prebet22,DBLP:conf/fossacs/HirschkoffJP23}, %
+in PCF \cite{koutavas13} %
+as well as in languages supporting shared memory concurrency \cite{DBLP:conf/popl/TuronTABD13}, and mutable references \cite{DBLP:journals/jfp/DreyerNB12}.
+%
+The more sophisticated the languages, the more intricate and larger the proofs.
+The need for mechanisation became thus apparent, in particular to prove that
+complex logical relations defined in the framework Iris
+  (implemented in Coq) % a metalogic defined in Coq,
+are sound, \ie included in the preorder \cite{DBLP:conf/popl/KrebbersTB17,DBLP:conf/lics/FruminKB18}.
+%% TODO study the paper and describe better what they do.
+The paper \cite{DBLP:journals/jlap/AubertV22} provides a framework to study
+contextual equivalences in the setting of process calculi.
+It is worth noting, though, that as argued in
+\cite[Section~$3$]{DBLP:journals/lisp/Boudol98},
+Morris equivalence coincides with $\May$-equivalence,
+at least if the operational semantics at hand enjoys the Church-Rosser
+property. In fact \cite{DBLP:conf/caap/BoudolL96} define Morris
+preorder literally as a testing one, via tests for convergence.
+The studies of the \mustpreorder in process calculi can thus be seen
+as providing proof methods to adapt Morris equivalence to
+\nondeterministic settings, and using contexts that are really
+external observers. To sum up, one may say that
+  Morris equivalence coincides with $\May$-equivalence when
+  \nondeterminism\ is confluent and all states are viewed as accepting states,
+  while it coincides with $\opMust$ equivalence in the presence of true
+  \nondeterminism\ and when only successful states are viewed as accepting states.
+
+  In the setting of nondeterministic and possibly concurrent
+  applicative programming languages
+  \cite{DBLP:conf/ppdp/Schmidt-Schauss18,DBLP:journals/corr/abs-2008-13359,birkedal-non-determinism},
+  also a contextual preorder based on may and must-termination has
+  been studied \cite{DBLP:journals/mscs/SabelS08,birkedal-non-determinism}.
+  Our preorder $\bhvleqone$ is essentially a
+  generalisation of the must-termination preorder of
+  \cite{DBLP:journals/mscs/SabelS08} to traces of visible actions.
+  
+  %% The work of \cite{DBLP:conf/fossacs/HirschkoffJP23} provides a similar
+  %% example for the Morris preorder itself. \leo{This reference should be better
+  %% motivated IMO.}
+
+  
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Models of asynchrony
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{Models of asynchrony}
+While synchronous (binary) communication requires
+the simultaneous occurrence of a send and a receive action,
+asynchronous communication allows a delay between a send action and
+the corresponding receive action.  Different models of asynchrony
+exist, depending on which medium is assumed for storing messages in
+transit. In this paper, following the early work on the asynchronous
+$\pi$-calculus~\cite{DBLP:conf/ecoop/HondaT91,boudol:inria-00076939,ACS96},
+we assume the medium to be an unbounded
+unordered mailbox, shared by all processes. Thus, no process needs to
+wait to send a message, namely the send action is non-blocking.
+  This model of communication is best captured via the output-buffered
+  agents with feedback of \cite{DBLP:conf/concur/Selinger97}. 
+  % LTSs have been shown to be morphisms of a traced monoidal category
+  % of buffers by \cite{DBLP:journals/entcs/Selinger99}.
+  The early style LTS of the asynchronous $\pi$-calculus is a concrete example of this
+  kind of LTSs.
+A similar global unordered mailbox is used %for instance
+also in Chapter~$5$ of \cite{DBLP:phd/us/Thati03}, %
+by \cite{Brookes2002DeconstructingCA}, which relies explicitly on a mutable
+global state, and by \cite{palamidessi_2003}, which
+manipulates it via two functions {\em get} and {\em set}.
+%\ilacom{In the bib file, the ref to Palamidessi should be updated to}
+%\gb{IS the problem fixed?}
+
+
+% one unordered buffer for every name
+  %Instead,
+More deterministic models of asynchrony are obtained assigning a data
+structure to every channel. %
+%% For example \cite{josephs} model
+%% asynchrony by assigning a separate {\em unordered} buffer to each
+%% channel.  \ilacom{I haven't read \cite{josephs}, but if channels are as
+%%   in CCS or TCSP I don't see how assigning an {\em unordered} buffer
+%%   to each channel can make the model more deterministic. If messages
+%%   are unordered no matter the channel they were sent along, where does
+%%   the additional determinism come from?}
+%
+For example \cite{HYC08,HYC16} use an even more deterministic model
+in which each ordered pair of processes is assigned a dedicated
+channel, equipped with an {\em ordered} queue. Hence, messages along
+such channels are received in the same order in which they were sent.
+% \ilacom{Aparté. One should be careful when comparing different models, because
+%   the communication mode may vary: in CCS (resp., the $\pi$-calculus)
+%   all channels are shared among all processes, and one must use
+%   restriction (resp., the $\nu$ construct of the $\pi$-calculus) to
+%   ``privatise'' communication on a given channel.  Instead, in session
+%   calculi communication is point-to-point and there is a dedicated
+%   channel for each ordered pair of processes. Moreover, usually in
+%   session calculi each process is assumed to have sequential
+%   behaviour (\ie there is only top level parallelism). So indeed, their
+%   communication pattern is more restricted. In fact, the LTSs of
+%   sessions are fully deterministic, in the sense that there are no two
+%   transitions from the same state with equal labels.}  
+  This model is used for asynchronous session calculi, and mimics the
+  communication mode of the TCP/IP protocol.  The obvious research
+  question here is how to adapt our results to the different
+  communication mechanisms and different classes of LTSs. For
+  instance, both \cite{Tanti2015TowardsSR} and \cite{caruana19}
+  define LTSs for \textsc{Erlang}. We will study whether at least one
+  of these LTSs is an instance of output-buffered agents with
+  feedback. If this is not the case, we will first try to adapt our
+  results to \textsc{Erlang} LTSs.
+
+
+  
+  \paragraph{Mutable state}
+  Prebet \cite{DBLP:conf/icalp/Prebet22} has recently shown an 
+  encoding of the asynchronous $\pi$-calculus into a $\lambda$-calculus
+  with references, which captures Morris equivalence via a bisimulation.
+  This renders vividly the intuition that output-buffered agents
+  manipulate a shared common state.
+  We therefore see our work also as an analysis of the \mustpreorder for
+  a language in which programs manipulate a global mutable store.
+  Since the store is what contains output messages, and our formal
+  development shows that only outputs are observable, our results
+  suggest that characterisations of testing preorders for impure
+  programming languages should predicate over the content of the mutable
+  store, \ie the values written by programs.
+  Another account of $\pi$-calculus synchronisation via a
+    functional programming language is provided in
+    \cite{DBLP:journals/corr/abs-2008-13359}, that explains how to
+    use Haskell \textsc{M-var}s to implement $\pi$-calculus
+    message passing.
+
+
+%% \subsection{Comparision with bisimulation}
+
+
+%% \gb{First, the must preorder does not require an LTS to be defined. A reduction semantics suffices.}
+
+
+
+
+%% %% {\bfseries Software correctness via refinements:}
+%% %% %% WHY REFINEMENTS ?
+%% %% The highest precision when reasoning on software correctness can be otained %
+%% %% %To reason appropriately on software correctness, it is paramount to achieve the highest precision, which can be attained
+%% %% via {\em formal methods}, i.e.~techniques that employ mathematical means to {\em prove} that the software at hand behaves as expected.
+%% %% According to \cite{DBLP:conf/amast/ButhKPS97}, the formal
+%% %% notion of {\em refinement} fits this purpose, and captures
+%% %% % is particularly useful in 
+%% %% many forms of engineering activity.  A refinement is a
+%% %% relation $\leq$ over programs, such that if $p \leq q$ then the
+%% %%   program~$q$ can be used in place of~$p$ safely, i.e. without
+%% %%   breaking any existing functionality.
+%% %% %that \ila{specifies when a program may  safely 
+%% %% %% %  replace another one.}
+%% %% %% \ila{Accordingly, this relation
+%% %% %%   is required to be} reflexive, i.e. every program
+%% %% %% % can
+%% %% %% \ila{may} replace itself ($p \leq p$), and transitive, i.e.
+%% %% %% if~$q$ %can
+%% %% %% \ila{may} safely replace~$p$ ($p \leq q$) and~$s$ %can
+%% %% %% \ila{may} safely replace~$q$ ($q \leq s$) then~$s$ %can
+%% %% %% \ila{may} replace~$p$ ($p \leq s$).
+%% %% In practice refinements are useful because they reduce the task of 
+%% %% proving the correctness of a program~$q$ to two smaller ones, namely
+%% %% \begin{inparaenum}[(1)]
+%% %% \item finding a correct~$p$,
+%% %% \item and proving that~$p \leq q$.
+%% %% \end{inparaenum}
+%% %% In practice, often either~$p$ already exists, or it is simpler than~$q$.
+%% %% %
+%% %% %% EXAMPLES OF USE OF REFINEMENTS
+%% %% %Refinements play a crucial role in the development of software,
+%% %% %its verification, and in its management.
+%% %% Refinements let us write correct software %via
+%% %% by \emph{iterative development} \cite[Section 1.1.6]{sommerville2011software},
+%% %% that is, in successive cycles. To ensure that the program $p_{i+1}$
+%% %% written at cycle $i+1$ improves on the program $p_i$, it suffices to
+%% %% prove that $p_i \leq p_{i+1}$.
+%% %% %A representative use case was given in
+%% %% %% NO: the code there was given. The verification took place via refinements.
+
+%% %% Refinements have been applied in software verification. For
+%% %%   instance the authors of
+%% %%   \cite{DBLP:conf/birthday/PeleskaB99,DBLP:conf/amast/ButhKPS97,DBLP:conf/amast/ButhPS98},
+%% %%   used
+%% %% % give a use case:
+%% %% %\ila{where}
+%% %% the so-called {\em failure refinement}, here denoted~$p \failleq q$,
+%% %% to verify the deadlock freedom of the
+%% %% software in the Russian module of the International Space Station.
+%% %% % , they relied on the so-called {\em failure refinement}.
+%% %% In fact, failure refinement has been successfully
+%% %% employed in the design of security protocols \cite{ryan2001modelling,DBLP:conf/fmoods/Schneider02},
+%% %% % of 
+%% %% railway systems \cite{DBLP:conf/fm/ButhS99},
+%% %% % of 
+%% %% electronic payment systems \cite{DBLP:conf/tacas/IsobeR05},
+%% %% and 
+%% %% % in 
+%% %% model-based engineering of
+%% %% robotics~\cite{DBLP:journals/sosym/MiyazawaRLCTW19}.
+%% %% It has also been used
+%% %% % as well as 
+%% %% for simulation~\cite{DBLP:journals/scp/CavalcantiSMRFD19}.
+
+
+
+%% \gb{This, once LTS are introduced, explain differences with bisimulation.}
+
+
+%% \begin{figure}[t]
+%%   \hrulefill
+%%   \begin{center}
+%%   \begin{tabular}{c@{\hskip20pt}c}%@{\hskip20pt}c@{\hskip20pt}c}
+%% %    \scalebox{.9}{
+%%       \begin{tikzpicture}
+%%         \node[state,scale=0.8] (s1) at (6,0) {$\server_1$};
+%%         \node[state,scale=0.8,below of=s1,left of=s1] (s2) {$$}; 
+%%         \node[state,scale=0.8,below of =s1,right  of=s1] (s3) {$$}; 
+%%         \node[state,scale=0.8,below of=s2] (s4) {$$}; 
+%%         \node[state,scale=0.8,below of=s3] (s5) {$$}; 
+        
+%%         \node[scale=0.8, below of = s5] (dummy) {$$};
+        
+%%         \path[->]
+%%         (s1) edge node [above left,scale=0.8] {$\texttt{str}$} (s2)
+%%         (s1) edge node [above right,scale=0.8] {$\texttt{str}$} (s3)
+%%         (s2) edge node [left,scale=0.8] {$\texttt{int}$} (s4)
+%%         (s3) edge node [right,scale=0.8] {$\texttt{long}$} (s5);
+%%       \end{tikzpicture}
+%% %    }
+%%       &
+%%      \begin{tikzpicture}
+%%         \node[state,scale=0.8] (s0) at (0,0) {$\server_2$};
+%%         \node[state,scale=0.8,below of=s0] (s1) {$$}; 
+%%         \node[state,scale=0.8,below of =s2,left  of=s1] (s2) {$$}; 
+%%         \node[state,scale=0.8,below of =s1,right  of=s1] (s3) {$$}; 
+%%         \node[state,scale=0.8,below of=s2] (s4) {$$}; 
+%%         \node[state,scale=0.8,below of=s3] (s5) {$$}; 
+        
+        
+%%         \path[->]
+%%         (s0) edge node [left,scale=0.8] {$\texttt{str}$} (s1)
+%%         (s1) edge node [above left,scale=0.8] {$\tau$} (s2)
+%%         (s1) edge node [above right,scale=0.8] {$\tau$} (s3)
+%%         (s2) edge node [left,scale=0.8] {$\texttt{int}$} (s4)
+%%         (s3) edge node [right,scale=0.8] {$\texttt{long}$} (s5);
+%%       \end{tikzpicture}
+%%      \\
+%%      (a) & (b)
+%%      \\[10pt]
+%%       \begin{tikzpicture}
+%%         \node[state,scale=0.8] (s0) at (0,0) {$q_1$};
+%%         \node[state,scale=0.8,below of =s0] (s1) {$$}; 
+        
+%%         \path[->]
+%%         (s0) edge node [left,scale=0.8] {$\texttt{str}$} (s1)
+%%         % terrible terrible hack.
+%%         (s1) edge  [white, out=225, in=-45, loop] node[below, scale=0.8] {$\tau$} (s1);
+%%       \end{tikzpicture}
+%%       &
+%%       \begin{tikzpicture}
+%%         \node[state,scale=0.8] (s0) at (0,0) {$q_2$};
+%%         \node[state,scale=0.8,below of=s0] (s1) {$\Omega$};
+        
+%%         \path[->]
+%%         (s0) edge node [left,scale=0.8] {$\texttt{str}$} (s1)
+%%         (s1) edge  [out=225, in=-45, loop] node[below, scale=0.8] {$\tau$} (s1);
+%%       \end{tikzpicture}
+%%       \\
+%%       (c) & (d)
+%%   \end{tabular}
+%%   \end{center}
+%%   % \caption{Servers to prove that weak \ila{bisimilarity} and the
+%%   %   equivalence induced by the \mustpreorder are incomparable.}
+%%   \caption{Servers showing that
+%%       $\,\testeqS~~\not\subseteq~~\approx\,$ and
+%%       $\,\approx~~\not\subseteq~~\testeqS$.
+%%      }
+%%   \label{fig:distinguishing-processes}
+%%   \hrulefill
+%% \end{figure}
+
+
+%% %% Examples and explanations
+%% \gb{{\bfseries Equating non-determinisms, distinguishing termination and divergence}
+%% %To \gb{recall} %\ila{start} discussing
+%% %the features of the \mustpreorder,
+%% Consider the behaviours in \rfig{distinguishing-processes}, we have that
+%% \begin{equation}
+%%   \label{eq:features-must}
+%%   \server_1 \testeqS \server_2, \qquad q_1 \NtestleqS q_2
+%% \end{equation}
+%% where~$\testeqS$~denotes the obvious equivalence induced by~$\testleqS$.}
+%% %Consider the behaviours~$\server_1$ and~$\server_2$ in
+%% %\rfig{distinguishing-processes}.
+%% The server~$\server_1$ is ready to
+%% input a string, and in doing so
+%% % by performing %said input
+%% % \ila{such input}
+%% it nondeterministically
+%% chooses whether to input next an integer or a long.
+%% %Similarly to
+%% Like  the server~$\server$ of \rfig{first-example},~$\server_1$ is an
+%% external choice, but in this case
+%% % , though,
+%% the environment cannot
+%% influence the result of the choice %by~$\server_1$,
+%% as both branches of~$\server_1$ match the same offer. % from the environment.
+%% % , which therefore is non-deterministic.
+%% % This form of non-determisim is often called {\em
+%% %   external} for it depends on an interaction between the server and
+%% % the environment.  
+%% The behaviour of~$\server_2$ is %only
+%% slightly different: it first inputs a string, and then takes an internal decision,
+%% represented by the two $\tau$ transitions, akin to an \texttt{if then
+%%   else}. In one branch it becomes ready to input an integer, while in
+%% the other it becomes ready to input a long. In this case the server
+%% shows some {\em internal} nondeterminism.
+%% \cite{DBLP:journals/acta/Nicola87} argues that there is no way to
+%% distinguish~$\server_1$ and~$\server_2$, \ie external and internal
+%% nondeterminism, if one can only observe the visible actions they
+%% may perform and the way they react to external stimuli.
+%% % only the visible actions they may perform and the
+%% % way they may react to external stimuli are considered. 
+%% This is exactly
+%% the standpoint of clients, which indeed cannot distinguish the servers
+%% at hand, hence $\server_1 \testeqS \server_2$.
+
+%% %As another example,
+%% Consider now the servers~$q_1$ and~$q_2$.
+%% Since parallel composition models an unfair scheduler they
+%% are distinguished by the client $r = \co{\texttt{str}} \Par
+%% \tau.\Unit$, depicted in \rfig{first-example}, where $\Unit$
+%% denotes syntatically a good state, depicted using dashed borders.
+
+
+
+%% This client will always reach a good
+%% (\ie dashed) state when run together with~$q_1$, while it could be
+%% prevented from reaching success when run together with~$q_2$, because
+%% the scheduler allows the infinite computation:
+%% $$
+%% \cpar{q_2}{r} \st{\tau} \cpar{ \Omega }{r} \st{\tau}  \cpar{
+%%   \Omega }{r}  \st{\tau} \ldots
+%% $$
+%% in which~$r$ starves. This implies~$q_1 \NtestleqS q_2$.
+
+
+
+%% {\bfseries Advantages over weak bisimilarity.}
+%% %Summing up, we have $\server_1 \testeqS \server_2$ and $q_1 \NtestleqS q_2$.
+%% %This
+%% \gb{\req{features-must} puts the \mustpreorder in sharp contrast with the
+%%   weak bisimilarity equivalence. First of all, we have that~$\server_1 \not\approx
+%% \server_2$. To prove this, thanks to the Hennessy-Milner theorem it suffices to show a formula 
+%% %not
+%% %\ila{weakly bisimilar if and only if they satisfy the same formulae
+%% %are distinguished by some formula
+%% in the recursive %extension of
+%% Hennessy-Milner logic\footnote{Also known as the modal $\mu$-calculus.}
+%% }%% GB
+%% that is satisfied by $\server_2$ and not by $\server_1$.
+%% %It is thus easy to see that~$\server_1 \not\approx \server_2$,
+%% The discriminating formula is $\dmd{\texttt{str}}(\dmd{\texttt{int}}\true 
+%% \wedge \dmd{\texttt{float}}\true)$.
+%% %, which is satisfied by~\ila{$\server_2$} but not by~\ila{$\server_1$.} 
+%% %\gb{I suggest to discuss elsewhere the test associated to
+%% %  $\phi$, in order to stick to the point here.}
+%% Essentially, weak bisimilarity distinguishes the external nondeterminism of~$\server_1$
+%% and the internal nondeterminism of~$\server_2$, while the
+%% \mustpreorder does not.
+%% Indeed, the client to test the above formula is
+%% $\Unit \Par \co{\texttt{str}} \Par \co{\texttt{int}} \Par
+%% \co{\texttt{float}}$ and it is satisfied by both $q_1$ and $q_2$,
+%% \ie does not distinguish them.
+%% Aware of this phenomenon, %first
+%% \cite{DBLP:journals/acta/Nicola87}, and later %then
+%% \cite{DBLP:journals/tcs/BorealeG06} and \cite{DBLP:journals/iandc/RensinkV07},
+%% argued that weak bisimilarity is over-discriminating, \ie that its
+%% resolution power can be undesirable in practice.
+%% %% NOT REALLY ARGUED BY THOSE RensinkV07
+%% %and that
+%% %equivalences à la~$\testeqS$ offer a more faithful picture of
+%% %reality.
+
+%% It is also immediate to see that~$q_1 \approx q_2$, since
+%% weak bisimilarity does not distinguish termination and
+%% divergence\footnote{Divergence-sensitive variants of weak bisimilarity
+%%   have been considered, but they lose some of the
+%%   advantages of the original definition.}.
+%% Again, this seems a worse model of reality than the one afforded by
+%% the \mustpreorder.
+
+%% \newcommand{\spec}{{\mathit{spec}}}
+%% \newcommand{\impl}{{\mathit{impl}}}
+
+%% \cite{DBLP:journals/iandc/RensinkV07} suggest also that
+%% preorders have an intrinsic advantage over equivalences,
+%% in that they allow comparing specifications and implementations.
+%% \gb{For instance, the inequality~$\server_\spec~\testleqS~\server_\impl$
+%% %we can  consider
+%% %view~$\server_2$ as an
+%% %{\em implementation} of the {\em specification}~$\server_1$.
+%% %the definition
+%%   %of the preorder
+%%   ensures that any client satisfied by the specification
+%% will run correctly also with the implementation, hence a proof that
+%% $\server_\spec \testleqS \server_\impl$
+%% %coincides with proving the
+%% ensures that the implementation is correct. This is indeed a standard
+%% usage of \textsc{CSP} failure refinement
+%% \cite{DBLP:conf/icalp/Brookes83,DBLP:conf/tacas/Gibson-RobinsonABR14}.}
+%% In the world of refinements, the \mustpreorder has %again
+%% an advantage also over \emph{weak similarity}, denoted~$\lesssim$,
+%% for a theory for~$\testleqS $ sheds light %by definition
+%% also on the  equivalence~$\testeqS$, since $
+%% {\testeqS} = {\testleqS} \cap
+%% (\testleqS)^{-1}$. This is not the case for weak similarity, since
+%% ${\approx} \neq {\lesssim} \cap (\lesssim)^{-1}$ (see
+%% \cite{DBLP:books/daglib/0098267}, Exercise 3.10).
+%% % is the standard one to
+%% % prove that ${\approx} \neq {\lesssim} \cap (\lesssim)^{-1}$.
+
+
+%% A more subtle advantage over weak bisimilarity is that~$\testleqS$ and
+%% the equivalence it induces can be parameterised with respect to
+%% different notions of fairness, as explained by \cite{DBLP:conf/fossacs/Glabbeek23}:
+%% it suffices to change the semantics of parallel composition.
+%% A solid understanding of the \mustpreorder can thus shed light also
+%% on fair refinements. This is exemplified by
+%% \cite{DBLP:journals/jfp/AghaMST97}, who point out explicitly
+%% the impact of the fairness assumptions in their proofs.
+
+%% \gb{%
+%% A final asset of the \mustpreorder in particular, and testing ones
+%%   in general, is that it is equipped with fully abstract denotational models
+%% (\cite{DBLP:books/daglib/0066919,DBLP:journals/iandc/BorealeN95,DBLP:journals/tcs/Hennessy02,DBLP:journals/corr/Hirschowitz14}).}
+%% %while bisimilarity lacks a natural denotational model.
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SHORT COMPARISON
+
+  %%
+  %% BETTER OMIT THIS.
+  %% THE PAPER IS ALREADY TOO LONG, AND ANY SERIOUS COMPARISONG WITH BISIMULATION OPENS A OF WORMS.
+  %%
+%% {\bfseries \mustpreorder and bisimilarity}
+%% The differences between the \mustpreorder %must testing preorder
+%% and bisimilarity in a synchronous setting are discussed at length by
+%%   \cite{DBLP:conf/icalp/Pnueli85,DBLP:journals/acta/Nicola87,DBLP:journals/tcs/BorealeG06,DBLP:journals/iandc/RensinkV07,sangiorgi}.
+%% Essentially~$\testleqS$~distinguishes termination and divergence,
+%% while bisimilarity does not; and~$\testleqS$~does not distinguish external and
+%% internal non-determinism, while bisimilarity does.
+%% Similar differences may be found between their asynchronous
+%% counterparts.
+
+%% \gb{Why do we care about about common features ?}
+%% Let us instead point out some common
+%%   features of our asynchronous \mustpreorder and of the
+%%   asynchronous bisimilarity of~\cite{ACS96,ACS98}:
+%%   \begin{inparaenum}
+%%   \item the definition of asynchronous bisimilarity essentially mimics the ordinary
+%%     bisimilarity in the LTS by Honda and Tokoro, the same LTS which is
+%%     the basis for our alternative characterisations of the asynchronous
+%%     \mustpreorder, and
+%%   \item
+%%     the way in which our characterisations relate stable states
+%%     %our asynchronous acceptance sets
+%%     differ from the classical one \gb{No it doesn't. It is exactly the
+%%     same definition.} in two regards, by %ones by
+%%     the use of traces in the LTS by Honda and Tokoro (rather than
+%%     traces in the ordinary LTS), and by considering only output
+%%       actions instead of all the actions, %restricting the final ready
+%%     %set to outputs,
+%%     much in the same way as the barbed congruence characterisation of
+%%     asynchronous bisimilarity given by \cite{ACS96,ACS98} differs
+%%     from the standard one by restricting the set of barbs to the output barbs.
+%%   \end{inparaenum}
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%
+%% SYNCHRONOUS SETTING
+%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{Theories for synchronous semantics}
+%%%%% HIDDEN FOR BREVITY
+%%%%% DO NOT EREASE
+%% The \mustpreorder has been studied and/or employed in more than~$30$
+%% papers, as well as in a book by~\cite{DBLP:books/daglib/0066919},
+%% always in settings where both inputs and outputs are blocking.
+%% Its theory has thus informed various other formal models that
+%% we breafly recall.
+%%%%
+%%%%
+%% Web services
+Both \cite{DBLP:conf/concur/LaneveP07} and
+\cite{DBLP:journals/toplas/CastagnaGP09} employed LTSs as a model of
+contracts for web-services (\ie \texttt{WSCL}), and the \mustpreorder
+as refinement for contracts.  The idea is that a search engine asked
+to look for a service described by a contract~$\server_1$ can
+actually return a service that has a contract~$\server_2$, provided
+that~$\server_1 \testleqS \server_2$.
+
+%% Monitors
+The \mustpreorder for {\em clients} proposed by
+\cite{DBLP:journals/corr/BernardiH15} has partly informed the
+theory of monitors by \cite{DBLP:journals/pacmpl/AcetoAFIL19},
+in particular the study of preorders for monitors by
+\cite{DBLP:journals/iandc/Francalanza21}.
+Our results concern LTSs that are more general than those of monitors,
+and thus %we expect that
+our code could provide the basis to mechanise
+the results of \cite{DBLP:journals/pacmpl/AcetoAFIL19}.
+
+%% Session types
+The first subtyping relation for binary session types was presented
+in~\cite{DBLP:journals/acta/GayH05} using a syntax-oriented definition.
+The semantic model of that subtyping is a refinement %that is
+very similar to the \mustpreorder. The idea is to treat types as \textsc{CCS} terms,
+assign them an LTS
+\cite{DBLP:conf/ppdp/CastagnaDGP09,DBLP:conf/ppdp/Barbanerad10,DBLP:journals/iandc/RavaraRV12,DBLP:journals/mscs/BernardiH16},
+and use the resulting testing preorders as semantic models of the
+subtyping.
+%this operational semantics to define a semantic subtyping.
+In the setting of coinductively defined higher-order session types, the
+correspondence is implicitly addressed
+in~\cite{DBLP:conf/ppdp/CastagnaDGP09}.
+In the setting of recursive higher-order session types, %this correspondence is
+it is given by Theorem 4.10 of~\cite{DBLP:journals/corr/BernardiH13}.
+
+%{\bfseries Semantic models of subtyping for session types.}
+%%% SLIGHT REPETITION WITH PREVIOUS PARAGRAPH
+%Testing preorders provide semantic models of subtyping for binary
+%session types, both in synchronous and asynchronous settings
+%\cite{DBLP:journals/corr/BernardiH13,DBLP:journals/mscs/BernardiH16,DBLP:journals/lmcs/BravettiCLYZ21}.
+%
+% We would like to mechanise in our framework these results,
+% in particular the ones about asynchronous semantics, and contrast and
+% compare the various testing preorders used in the literature.
+%
+
+
+\paragraph{Must-preorder and asynchrony}
+The first investigation on the \mustpreorder in an asynchronous
+setting was put forth by \cite{DBLP:conf/fsttcs/CastellaniH98}.
+While their very clear examples shed light on the preorder, their
+alternative preorder (Definition 6 in that paper) is more complicated
+than necessary: it uses the standard LTS of \TACCS, its lifting to an LTS
+with forwarding, and two somewhat ad-hoc notions: a predicate $\rr{I}$ and a condition on multisets of inputs. %We dispose of both these ad-hoc notions.
+Moreover that preorder is not complete because of a glitch in the treatment of divergence. The details of the counter-example we found to that completeness
+result are given in \rapp{counterexample}.
+
+In~\cite{DBLP:journals/jlp/Hennessy05} Hennessy outlines how to adapt the
+approach of \cite{DBLP:conf/fsttcs/CastellaniH98} to a typed
+asynchronous $\pi$-calculus. While the LTS with forwarding is
+replaced by a Context LTS, the predicates to define the alternative
+preorder are essentially the same as those used in the preceding work with
+Castellani. Acceptance sets are given in Definition 3.19 there, and
+the predicate~$\rr{}$ is denoted~$\searrow$, while the generalised
+acceptance sets of \cite{DBLP:conf/fsttcs/CastellaniH98} are given in
+Definition 3.20.  Owing to the glitch in the completeness of
+\cite{DBLP:conf/fsttcs/CastellaniH98}, it is not clear that Theorem
+3.28 of~\cite{DBLP:journals/jlp/Hennessy05} is correct either.
+
+%% TAKEN FROM INTRO
+%%   and the subsequent paper
+%% while adapting the results of \cite{DBLP:conf/fsttcs/CastellaniH98} to the
+%% asynchronous $\pi$-calculus, leaves to the reader
+%% some parts of the completeness proof (lemmas 3.26 and 3.27 there).
+
+Also the authors of~\cite{DBLP:journals/iandc/BorealeNP02}
+consider the \mustpreorder in \ACCS.
+There is a major difference between their approach and ours.
+When studying theories for asynchronous programs, one can either
+\begin{enumerate}[(1)]
+  \item \label{first-approach} keep the definitions used for synchronous programs,
+    and enhance the LTS with forwarders;
+    or
+  \item adapt the definitions, and keep the standard LTS.
+\end{enumerate}
+In the first case, the complexity is moved into the LTS, which
+becomes infinite-branching and infinite-state.
+In the second case, the complexity is moved into the definitions
+used to reason on the LTS (i.e. in the meta-language), and in
+particular in the definition of the alternative preorder, which
+deviates from the standard one. The authors of
+\cite{DBLP:journals/iandc/BorealeNP02} follow the second approach. %
+This essentially explains why they employ the standard LTS of \CCS
+and to tackle asynchrony they reason on traces via (1) a preorder~$\preceq$ (Table 2 of that paper) that defines on {\em input} actions
+the phenomena due to asynchrony; and (2)
+a rather technical operation on traces, namely %$s,s'$, namely
+  $s \ominus s' = ( \mset{s}_{i} \setminus
+  \mset{s'}_{i}) \setminus \co{( \mset{s}_{o} \setminus  \mset{s'}_{o}
+    )}$.
+% \begin{enumerate}[(i)]
+% \item a preorder~$\preceq$ (Table 2 of that paper) that defines on {\em input} actions
+%   the phenomena due to asynchrony, for instance their {\em
+%     annihilation} rule (i.e. TO3) is analogous to the \outputfeedback axiom, and
+%   their {\em postponement} (i.e. TO2) is analogous to the
+%   \outputcommutativity axiom; and 
+% %  In fact \rlem{acnv-drop-in-the-middle} shows that the relation~$\acnvalong$ is preserved by
+% %  two operations on traces that are reminiscent of {\em deletion} and
+% %  {\em annihilation} of \cite{DBLP:journals/iandc/BorealeNP02}; and
+% \item a rather technical operation on traces, namely %$s,s'$, namely
+%   $s \ominus s' = ( \mset{s}_{i} \setminus
+%   \mset{s'}_{i}) \setminus \co{( \mset{s}_{o} \setminus  \mset{s'}_{o}
+%     )}$.
+% \end{enumerate}
+We favour instead the approach in~(\ref{first-approach}), for %, as we already argued,
+it helps %us
+achieve a modular mechanisation.
+%% Using definitions of alternative preorders that are parametrised over the LTS,
+%% we can treat uniformly the characterisations of the \mustpreorder for
+%% both the asynchronous semantics and the synchronous one.
+%% In fact the arguments developed for the asynchronous case, which
+%% features both blocking and non-blocking actions, carry over for free
+%% to the synchronous case, which features only blocking actions.
+
+%study both the $\May$ and $\opMust$ preorders for
+%\ACCS. The definitions of our alternative preorders are simpler than
+%their Definition 7.4.
+
+%% WE ALSO USE MUST-SETS NOW
+%% Another difference between our approach and the one by \cite{DBLP:journals/iandc/BorealeNP02}
+%% is that our alternative preorder uses acceptance sets, \ie compares (output) actions of stable states.
+%% Instead, their Definition $7.4$ compares the so-called \MustSets.
+%% More precisely, if~$L$ is a set of actions then they write $\server \mathrel{\opMust} L$
+%% whenever $\server \wt{} \server'$ implies that $\server \st{ \mu }$ for some $\mu
+%% \in L$, and say that~$L$ is a \MustSet of $\server$.
+%% In their alternative preorder then  $\serverA \leq \serverB$
+%% if every \MustSet of $\serverA$ is a \MustSet of $\serverB$.
+
+
+
+The authors of~\cite{DBLP:journals/tcs/NicolaP00} give yet another account of the \mustpreorder.
+Even though non-blocking outputs can be written in their calculus,
+they use a left-merge operator that allows writing {\em blocking} outputs.
+%Inequalities such as $ {\tt str}.\Nil \testleqS \Nil$
+%are thus false in their setting, because clients can be written that
+%distinguish the two servers.
+The contexts that they use to prove the completeness of their
+alternative preorder use such blocking outputs, consequently
+their arguments need not tackle the asymmetric treatment of input and
+output actions. This explains why they can use smoothly a standard
+LTS, while \cite{DBLP:conf/fsttcs/CastellaniH98} and
+\cite{DBLP:journals/iandc/BorealeNP02} have to resort to more
+complicated structures.
+
+
+Theorem 5.3 of the PhD thesis by \cite{DBLP:phd/us/Thati03} states an
+alternative characterisation of the \mustpreorder, but it is given
+with no proof.  The alternative preorder given in Definition 5.8 of
+that thesis turns out to be a mix of the ones by
+\cite{DBLP:conf/fsttcs/CastellaniH98} and
+\cite{DBLP:journals/iandc/BorealeNP02}.  In particular, the
+definition of the alternative preorder relies on the LTS with
+forwarding, there denoted~$\st{}_A$ (Point 1. in Definition 5.1
+defines exactly the input transitions that forward messages into the
+global buffer).  The condition that compares convergence of processes
+is the same as in \cite{DBLP:conf/fsttcs/CastellaniH98}, while
+server actions are compared using \MustSets, and not \AcceptanceSets.
+In fact, Definition 5.7 there is titled ``\AcceptanceSets'' but it
+actually defines \MustSets.
+
+
+
+
+\paragraph{May-preorder} %
+  $\May$ testing and the $\May$-preorder, have been widely studied in 
+  asynchronous settings. The first characterisation for \ACCS appeared 
+  in \cite{DBLP:conf/fsttcs/CastellaniH98} and relies on comparing traces
+  and asynchronous traces of servers. Shortly after
+  \cite{DBLP:journals/iandc/BorealeNP02} presented a characterisation based
+  on operation on traces.
+  A third characterisation appeared in \cite{DBLP:conf/birthday/BaldanBGV15},
+  where the saturated LTS $\st{}_s$ is essentially our $\sta{}$.
+  That characterisation supports our claim that results about synchronous
+  semantics are true also for asynchronous ones, modulo forwarding.
+  Compositionality of trace inclusion, i.e. the alternative
+  characterisation of the $\May$-preorder, 
+  has been partly investigated in Coq by \cite{aathalye-meng} in the
+  setting of IO-automata.
+  The $\May$-preorder has also been studied in the setting of actor languages
+  by \cite{caruana19,Tanti2015TowardsSR}.
+  %% The conclusion of \cite{Tanti2015TowardsSR}
+  %% suggests that characterising a liveness preserving preorder for
+  %% asynchronous semantics remains an open problem. This paper closes it.
+
+%%%
+% \paragraph{Fairness} 
+% Van Glabbeek \cite{DBLP:conf/fossacs/Glabbeek23} argues that by amending the
+% semantics of parallel composition (i.e. the scheduler) different
+% notions of fairness can be embedded in the \mustpreorder. We would like to investigate
+% which notion of fairness makes the \mustpreorder coincide with the 
+% \textsc{Fair}-preorder of \cite{DBLP:journals/iandc/RensinkV07}.
+
+
+
+\paragraph{Bar-induction}
+A mainstay in the literature on the \mustpreorder is \koenigslemma, see
+for example Theorem 2.3.3 in \cite{TCD-CS-2010-13}, and Theorem 1 in
+\cite{DBLP:journals/scp/BernardiF18}. \cite{dummett2000elements}, though,
+explains in detail why \koenigslemma is not constructive.
+%
+Instead, we use in this paper the constructive \barinduction principle, whose
+fundamental use is to prove that if every path in a tree~$T$ is finite, then~$T$
+is well-founded, as discussed by
+\cite{DBLP:conf/aplas/NakataUB11,DBLP:conf/lics/BredeH21} and
+\cite{kleene1965foundations}.
+%
+Unfortunately, while it is a constructive principle, mainstream proof
+assistants do not support it yet, which is why on the one hand we had
+to postulate it as a proof principle while on the other hand we proved
+it in classical logic using the Excluded Middle axiom. % One consequence
+% of using an axiom is that they do not have computational content.
+%
+Developing a type theory with a principle of \barinduction is the subject of
+recent and ongoing work~\cite{DBLP:conf/types/Fridlender98,DBLP:journals/jacm/RahliBCC19}.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Asynchronous setting
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% {\bfseries Semantics of Asynchrony}
+
+%% % This leads to the presence
+%% This amounts to view outputs as sent messages and to assume
+%% the presence of a shared global unordered mailbox, \ie a {\em buffer},
+%% which all processes use to send messages to and read messages from.
+%% Indeed the LTS we consider are morphisms of a traced monoidal category
+%% of buffers presented by \cite{DBLP:journals/entcs/Selinger99}.
+%% For instance, consider the term
+%% $$
+%%  q \Par \mailbox{ \co{a}
+%%   \Par \co{ b }} \qquad \text{ where } \qquad q = a . \Nil \extc \tau . b.(\co{c} \Par e.\Nil)
+%% $$
+%% Here the mailbox is highlighted, and the process~$q$
+%% is ready to either do an input $a$, thereby consuming the message %output
+%% $\co{a}$ from the mailbox, or internally decide (for instance
+%% due a timeout) to move to a state in which it can consume the message
+%% $\co{b}$. In the latter case, %after $b$ has consumed $\co{b}$ %the interaction of $b$ and $\co{b}$
+%% the process will then put a message $\co{c}$ in the mailbox and remain locked
+%% waiting for a message $\co{e}$.
+
+
+
+
+%% \TODO{Possibly omit the following sentence ?}
+%% None of the above works relies on the trace normalisation
+%% that we used to define our preorder~$\asynleq$ \gb{(\rapp{normal-form})}.
+
+
+
+
+
+
+
+%% %%%%%%%%%%%%%%%%%%%%%%
+%% %% SYNCHRONOUS SETTING
+%% %%%%%%%%%%%%%%%%%%%%%%
+%% {\bfseries Theories for synchronous semantics.}
+%% %%%%% HIDDEN FOR BREVITY
+%% %%%%% DO NOT EREASE
+%% %% The \mustpreorder has been studied and/or employed in more than~$30$
+%% %% papers, as well as in a book by~\cite{DBLP:books/daglib/0066919},
+%% %% always in settings where both inputs and outputs are blocking.
+%% %% Its theory has thus informed various other formal models that
+%% %% we breafly recall.
+%% %%%%
+%% %%%%
+%% %% Web services
+%% \cite{DBLP:conf/concur/LaneveP07} and
+%% \cite{DBLP:journals/toplas/CastagnaGP09} employed LTSs as a model of
+%% contracts for web-services (\ie \texttt{WSCL}), and the \mustpreorder
+%% as refinement for contracts.  The idea is that a search engine asked
+%% to look for a service described by a contract~$\server_1$ can
+%% actually return a service that has a contract~$\server_2$, provided
+%% that~$\server_1 \testleqS \server_2$.
+
+%% %% Monitors
+%% The \mustpreorder for {\em clients} proposed by
+%% \cite{DBLP:journals/corr/BernardiH15} has partly informed the
+%% theory of monitors by \cite{DBLP:journals/pacmpl/AcetoAFIL19},
+%% in particular the study of preorders for monitors by
+%% \cite{DBLP:journals/iandc/Francalanza21}.
+%% Our results concern LTSs that are more general than those of monitors,
+%% and thus %we expect that
+%% our code could provide the basis to mechanise
+%% the results of \cite{DBLP:journals/pacmpl/AcetoAFIL19}.
+
+%% %% Session types
+%% \cite{DBLP:journals/acta/GayH05} presented the first subtyping
+%% relation for binary session types using a syntax-oriented definition.
+%% The semantic model of that subtyping is a refinement %that is
+%% very similar to the \mustpreorder. The idea is to treat types as \textsc{CCS} terms,
+%% assign them an LTS
+%% \cite{DBLP:conf/ppdp/CastagnaDGP09,DBLP:conf/ppdp/Barbanerad10,DBLP:journals/iandc/RavaraRV12,DBLP:journals/mscs/BernardiH16},
+%% and use the resulting testing preorders as semantic models of the
+%% subtyping.
+%% %this operational semantics to define a semantic subtyping.
+%% In the setting of coinductively defined higher-order session types, the
+%% correspondence is implicitly addressed in 
+%% \cite{DBLP:conf/ppdp/CastagnaDGP09}.  In the setting of recursive
+%% higher-order session types, %this correspondence is
+%% it is given by Theorem 4.10 of
+%% \cite{DBLP:journals/corr/BernardiH13}.
+
+%% %{\bfseries Semantic models of subtyping for session types.}
+%% %%% SLIGHT REPETITION WITH PREVIOUS PARAGRAPH
+%% %Testing preorders provide semantic models of subtyping for binary
+%% %session types, both in synchronous and asynchronous settings
+%% %\cite{DBLP:journals/corr/BernardiH13,DBLP:journals/mscs/BernardiH16,DBLP:journals/lmcs/BravettiCLYZ21}.
+%% We would like to mechanise in our framework these results,
+%% in particular the ones about asynchronous semantics, and contrast and
+%% compare the various testing preorders used in the literature.
+%% More in general, given the practical relevance of asynchronous
+%% communication, it seems crucial %
+%% %natural \ilacom{utiliser un adjectif plus percutant que ``natural''? Crucial?}
+%% not only to adapt the large body of theory
+%% outlined above to the asynchronous setting but also to resort to
+%% machine supported reasoning to do it. This paper is meant to be a step
+%% forward in this direction.
+
+
+
+
+%%% COMMENTED TO SAVE SPACE
+%%%{\bfseries Comparison with failure refinement}
+
+%% \cite{DBLP:journals/iandc/BorealeN95} provide a fully-abstract
+%% denotational model and an axiomatisation of $\testleqS$ in the
+%% synchronous $\pi$-calculus. Once again, the present work paves
+%% the way to adapt those results to asychrony. Similarly for the
+%% fully-abstract model of \cite{DBLP:journals/tcs/Hennessy02}.
+
+
+
+%%% COMMENTED TO SAVE SPACE
+%%%{\bfseries Comparison with failure refinement}
+
+%% \cite{DBLP:journals/iandc/BorealeN95} provide a fully-abstract
+%% denotational model and an axiomatisation of $\testleqS$ in the
+%% synchronous $\pi$-calculus. Once again, the present work paves
+%% the way to adapt those results to asychrony. Similarly for the
+%% fully-abstract model of \cite{DBLP:journals/tcs/Hennessy02}.

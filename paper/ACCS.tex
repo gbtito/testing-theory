@@ -1,0 +1,1745 @@
+\renewcommand{\mailbox}[1]{\fcolorbox{gray}{yellow!40}{\ensuremath{#1}}}
+
+
+\section{Asynchronous CCS}
+\label{sec:accs}
+
+\begin{figure}[t]
+\hrulefill
+$$
+\begin{array}{l@{\hskip 3pt}ll@{\hskip 3pt}ll@{\hskip 3pt}l}
+\rinput
+&
+  \begin{prooftree}
+    \justifies
+    \aa.p \st{ \aa } p
+  \end{prooftree}
+&
+  \rtau
+&
+  \begin{prooftree}
+    \justifies
+    \tau.p \st{ \tau } p
+  \end{prooftree}
+  &
+
+\\[2em]
+
+%% %
+%%   \mboxinsert
+%% &
+%%   \begin{prooftree}
+%%     \justifies
+%%     \send{\aa}.p \st{\tau} p \Par \mailbox{\co{\aa}}
+%%   \end{prooftree}
+%% &
+\mboxelim
+&
+\begin{prooftree}
+  \justifies
+  \mailbox{\co{\aa}} \st{\co{\aa}} \Nil
+\end{prooftree}
+
+%%\\[2em]
+
+&
+\unfold
+&
+  \begin{prooftree}
+    \justifies
+    \rec{p} \st{\tau} p \subst{ \rec{p} }{ x }
+  \end{prooftree}
+&
+%% \rname{Omega}
+%% &
+%%  \begin{prooftree}
+%%    \justifies
+%%    \Omega \st{\tau} \Omega
+%%  \end{prooftree}
+%%  &
+
+ \\[2em]
+
+ % &
+  \extL
+  &
+\begin{prooftree}
+  p \st{  \alpha } p'
+  \justifies
+  p \extc q \st{  \alpha } p'
+\end{prooftree}
+
+&
+\extR
+&
+\begin{prooftree}
+  q \st{ \alpha } q'
+  \justifies
+  p \extc q \st{ \alpha } q'
+\end{prooftree}
+
+\\[2em]
+  \parL
+  &
+\begin{prooftree}
+{ \state \st{\alpha} \stateA }
+  \justifies
+      {\state \Par \stateB \st{\alpha} \stateA \Par \stateB}
+\end{prooftree}
+
+
+&
+\parR&
+\begin{prooftree}
+  \stateB \st{\alpha} \stateB'
+  \justifies
+      {\state \Par \stateB \st{\alpha} \state \LTSPar \stateB'}
+\end{prooftree}
+
+\\[2em]
+\com&
+\begin{prooftree}
+  \state \st{ \mu } \stateA \quad \stateB \st{\co{ \mu }} \stateB'
+  \justifies
+  \state \LTSPar \stateA \st{\tau} \stateB \LTSPar \stateB'
+\end{prooftree}
+
+
+\end{array}
+$$
+\caption{The LTS of processes. % (\coqLTS{lts}).
+  The meta-variables are
+  $\aa \in \Names, \mu \in \Act, \and \alpha \in
+  \Acttau$.%\TODO{Check consistency with notation in Preliminaries.}
+}  
+  %% \ilacom{For uniformity, \mboxelim could be written with an
+  %%   uppercase initial for {\sc Mb}. Also, in the absence of an
+  %%   internal choice operator, operator, the rules for choice could
+  %%   have been named simply {\sc Sum-L} and {\sc Sum-R}.}
+\label{fig:rules-LTS}
+\hrulefill
+\end{figure}
+
+
+Here we recall the syntax and the LTS of asynchronous \CCS, or \ACCS
+for short, a version of \CCS where outputs have no continuation
+  and sum is restricted to input- and $\tau$-guards. This calculus,
+  which is inspired by the variant of the asynchronous $\pi$-calculus
+  considered by~\cite{ACS96,ACS98} for their study of asynchronous
+  bisimulation, was first investigated
+  by~\cite{DBLP:conf/concur/Selinger97}, and subsequently resumed by
+  other authors such as~\cite{DBLP:journals/iandc/BorealeNP02}.
+  Different asynchronous variants of~\CCS were studied in the
+  same frame of time by~\cite{pugliesephd}, whose calculus included
+  output prefixing and operators from ACP, and
+  by~\cite{DBLP:conf/fsttcs/CastellaniH98}, whose calculus TACCS
+  included asynchronous output prefixing and featured two forms of
+  choice, internal and external, in line with previous work on testing
+  semantics~\cite{DBLP:conf/tapsoft/NicolaH87}.
+ % The material is standard
+% \cite{DBLP:books/daglib/0067019,DBLP:conf/fsttcs/CastellaniH98,DBLP:journals/iandc/BorealeNP02,DBLP:books/daglib/0004377}.
+% \ila{Note that it slightly differs from the version of asynchronous
+%   CCS used by , called TACCS, which features two forms of choice,
+%   internal and external, in line with previous work on testing
+%   semantics~\cite{DBLP:conf/tapsoft/NicolaH87}.}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% NAMES AND ACTIONS ALREADY PRESENTED IN THE PRELIMINARIES
+\leaveout{
+We assume a countable set $\Names$ of {\em names}, ranged over by $a,b,c,\ldots$, and denote by
+$\overline{\Names}$ the set of {\em co-names}, given by
+$\overline{\Names} = \setof{ \co{a} }{ a \in \Names }$.
+Names and co-names represent input and output actions,
+respectively.
+We let $\Act = \Names \cup \,\overline{\Names}$ %(\coqLTS{action})
+be the set of {\em visible
+  actions}, ranged over by $\mu, \nu, \dots$.
+We extend the complementation function to the whole set of actions $\Act$ by letting
+$\co{\co{a}} = a$ for all $a \in \Names$, and to any $A \subseteq \Act$
+by letting $\overline{A} = \setof{ \co{\mu} }{ \mu \in A }$.  Two
+actions $\mu, \nu\in\Act$ such that $\co{\mu} = \nu$ are called
+complementary.
+Note the slight abuse of notation: $\co{a}, \co{b}, \ldots$ denote output actions, also called {\em
+  atoms} in our language, while~$\co{ \mu }$ denotes the complementary action of $\mu$, and so it can be an input, for
+instance~$\co{ \co{ a }} = a$. We
+let $\trace, \traceA, \dots$ range over $\Actfin$, the set of finite sequences of
+visible actions.
+
+To represent internal computation we use the symbol
+$\tau$, where $\tau\notin\Act$.
+%The action~$\tau$, called the {\em invisible action}, has no
+%complementary action.
+The action~$\tau$ is said to be {\em invisible} and has no
+complementary action.
+We let
+$\Acttau = \Act \,\cup \set{ \tau }$ denote the set of all actions,
+ranged over by $\alpha, \beta, \ldots$.
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+The syntax of terms is given in \req{syntax-processes}.
+As usual,~$\rec{p}$ binds the variable~$x$~in~$p$, and we use
+standard notions of free variables, open and closed terms.
+Processes, ranged over by $p, q, r, \dots$ are {\em closed} terms.
+%, and their set is denoted by $\ACCS$.
+The operational semantics of processes is given by the LTS
+$\lts{\ACCS}{\Acttau}{\st{}}$ specified by the rules in \rfig{rules-LTS}.
+%We write $\state \st{\alpha} \stateA$ to mean $(\state,\alpha,\stateA) \in {\st{}}$.
+
+The prefix $ \aa.p $ represents a {\em blocked} process, which waits
+to perform the
+input $\aa$, \ie to interact with the atom $\co{ \aa}$, and then becomes $p$; and atoms
+$\mailbox{\co{ \aa }}, \mailbox{\co{ \ab }}, \ldots$ represent output
+messages.  We will discuss in detail the role played by atoms in the
+calculus, but we first overview the rest of the syntax. We
+include~$\Unit$ to syntactically denote successful states.
+%\ilacom{Do we really need to have~$\Unit$? It was obviously not
+%  present in~\cite{ACS96,ACS98}, and in this paper we use
+%  predicate $\goodSym$ to signal success, so what is the need for $\Unit$?}
+The prefix $ \tau.p $ represents a process that does one step of
+  internal computation and then becomes~$p$.
+  The sum $g_1 \extc g_2$ is a process that can behave as $g_1$ or $g_2$, but not both.
+  Thus, for example $ \tau.p \extc \tau.q$ models an \texttt{if \ldots then \ldots else}, while
+$ \aa.p \extc \ab.q$ models a \texttt{match \ldots with}.
+Note that the sum operator is only defined on \emph{guards}, namely it can only
+take as summands $\Nil, \Unit$ 
+%% \ilacom{this sounds wrong. If $\Nil,
+%%   \Unit$ can be summands, then we don't have guarded sums any more,
+%%   so we depart from all the other work on $\ACCS$.}
+  or input-prefixed and $\tau$-prefixed
+processes.
+While the restriction to guarded sums is a standard one,
+widely adopted in process calculi,
+%to avoid issues such as a distributed choice
+the restriction to input and $\tau$ guards is specific to asynchronous
+calculi. We will come back to this point after discussing atoms and
+mailboxes.
+%The process $\tau.p$ models a program that does one step of
+%internal computation and becomes~$p$.}
+% The sum $p \extc q$ is a process that can behave as $p$ or $q$, but
+% not both. Thus for example $ \tau.p \extc \tau.q$ models an
+% \texttt{if \ldots then \ldots else}, while $ \aa.p \extc \ab.q$
+% models a \texttt{match \ldots with}.
+%
+%% Terms as $ \aa.p \extc \aa.q $ are convenient to model external
+%% non-determinism, rather than as PL constructs. \ilacom{I would take
+%%   off this sentence, which is confusing since in fact
+%%   $ \aa.p \extc \aa.q $ is treated as \emph{internal nondeterminism}
+%%   in the testing semantics, where the following axiom holds:
+%%   $ \aa.p \extc \aa.q = \tau.\aa.p \extc \tau.\aa.q = \aa.p \intc \aa.q $.}
+Parallel composition $p \Par q$ runs $p$ and $q$ concurrently,
+% letting them also interact
+allowing them also to interact with each other, thanks to rule \com. For example
+\begin{equation}
+  \label{eq:example1}
+  \ab.\aa.\Nil \Par \ab.c.\Nil \Par \mailbox{ ( \co{\aa} \Par \co{\ab} \Par \co{c} ) }
+\end{equation}
+represents a system in which two concurrent processes,
+namely $\ab.\aa.\Nil$ and $ \ab.c.\Nil $, are both
+ready to consume the message $ \co{b} $
+from a third process, namely $\mailbox{\co{a} \Par \co{b} \Par \co{c}}$.
+This last process is a parallel product of atoms, and it is not
+guarded, hence it is best viewed as an unordered mailbox shared by {\em all}
+the processes running in parallel with it. For instance in (\ref{eq:example1})
+the terms $ b.a.\Nil$ and $b.c.\Nil$ share the mailbox $\mailbox{ \co{a} \Par \co{b}
+  \Par \co{c} }$.  Then, depending on which process consumes $\co{b}$,
+the overall process will evolve to either
+$b.c.\Nil \Par \mailbox{\co{c}} $ or $b.a.\Nil \Par \mailbox{\co{a}}$,
+which are both stuck.\footnote{The global shared mailbox that we
+    treat is reminiscent but less general than the chemical ``soup''
+    of \cite{DBLP:journals/tcs/BerryB92}.  In that context the
+    components of the soup are not just atoms, but whole parallel
+    components: in fact, the chemical soup allows parallel components
+    to come close in order to react with each other, exactly as
+      the structural congruence of~\cite{DBLP:conf/icalp/Milner90}, which indeed was
+    inspired by the Chemical Abstract Machine.}
+
+%% The global shared mailbox that we treat is akin to the
+%% chemical ``soup'' discussed by \cite{DBLP:journals/tcs/BerryB92}.
+%% \ila{This is not entirely true since in \cite{DBLP:journals/tcs/BerryB92}
+%%   the components of the soup are not just atoms, but whole parallel
+%%   components: in fact, the chemical soup allows parallel components to come
+%%   close in order to react with each other, exactly as done by the structural
+%%   congruence, which was indeed inspired by the CHAM. In conclusion,
+%%   I'm not sure the reference to the the CHAM is appropriate here.}
+Concerning the sum construct, we follow previous work on
+asynchronous calculi
+(\cite{ACS96,ACS98,DBLP:books/daglib/0004377,DBLP:journals/iandc/BorealeNP02})
+and only allow input-prefixed or $\tau$-prefixed terms as
+  summands. % \ilacom{previously it was:
+% and guard summands via either input or $\tau$~actions.}
+% \footnote{But
+                                %can we write terms like $a.\Nil \extc
+                                %(b.\Nil \Par c.\Nil)$ ?}
+The reason for forbidding atoms in sums is that the
+  \nondeterministic sum is essentially a synchronising operator: the
+  choice is solved by executing an action in one of the summands and
+  \emph{simultaneously} discarding all the other summands. Then, if an
+  atom were allowed to be a summand, this atom could be discarded by
+  performing an action in another branch of the choice. This would
+  mean that a process would have the ability to withdraw a message
+  from the mailbox without consuming it, thus contradicting the
+  intuition that the mailbox is a shared entity which is out of the
+  control of any given process, and with which processes can only
+  interact by feeding a message into it or by consuming a message from
+  it.  In other words, this restriction on the sum operator
+ensures that atoms % (i.e. outputs)
+indeed represent messages in a global
+mailbox. For further details see the discussion on page 191 of
+\cite{DBLP:books/daglib/0004377}.
+
+
+A structural induction on the syntax ensures that processes perform only a finite
+number of outputs:
+\begin{lemma}%[\coqLTS{outputs_of_spec}]
+  \label{lem:output-sets-finite}
+  For every $\state \in \ACCS \wehavethat {\cardinality{O(\state)}} \in \N$.
+\end{lemma}
+%\begin{proof}Structural induction on $p$. \end{proof}
+\noindent
+Together with \rlem{output-shape}, this means that at any point
+of every execution the global mailbox contains a finite number of
+messages. Since %the input actions in the LTS are finite-image,
+the LTS is image-finite under any visible action,
+a consequence of \rlem{output-sets-finite} is that the number of reducts
+of a program is finite.
+
+\renewcommand{\stateA}{p'}
+\begin{lemma}%[\coqLTS{lts_set_tau},\coqLTS{lts_set_tau_spec}]
+  \label{lem:st-finite-image}
+  \label{lem:sttau-finite-image}
+  For every $\state \in \ACCS \wehavethat {\cardinality{\reducts{
+        \state }{\ACCS}{\st}}} \in \N.$
+\end{lemma}
+\begin{proof}
+  Structural induction on~$p$. The only non-trivial case is if $ p = p_1 \Par p_2$.
+  In this case the result is a consequence of the inductive hypothesis, of \rlem{output-sets-finite} and
+  of the following fact: $ p \st{\tau} q $ iff
+  \begin{enumerate}
+    \item $p_1 \st{\tau} p'_1 $ and $q = p'_1 \Par p_2$,
+    \item $p_2 \st{\tau} p'_2 $ and $q = p_1 \Par p'_2$,
+    \item $p_1 \st{ a } p'_1 $ and $ p_2 \st{\co{a}} p'_2 $ and  $q =  p'_1 \Par p'_2$,
+    \item $p_1 \st{ \co{a} } p'_1 $ and $ p_2 \st{ a } p'_2 $ and  $q =  p'_1 \Par p'_2$.
+  \end{enumerate}
+  In the third case the number of possible output actions $\co{a}$ is finite thanks to \rlem{output-sets-finite},
+  and so is the number of reducts $p'_1$ and $p'_2$, so the set of term $ p'_1 \Par p'_2 $ is decidable.
+  The same argument works for the fourth case.
+\end{proof}
+
+
+
+Thanks to %\rcor{equiv-preserves-transitions-modulo-equiv},
+\rlem{output-sets-finite} and
+\rlem{sttau-finite-image}, \rlem{st-finite-image} holds also for the LTS modulo structural congruence,
+i.e. \lts{\modulo{\ACCS}{\equiv}}{\modulo{\st{}}{\equiv}}{\Acttau}.
+%and indeed when convenient we reason on this LTS.
+
+
+%% \newcommand{\tc}[1]{#1^+}
+%% \newcommand{\inv}[1]{(#1)^{-1}}
+%% \renewcommand{\sc}[1]{#1 \cup {} \inv{#1}}
+%% \newcommand{\sez}{\ensuremath{\equiv_0}\xspace}
+
+
+
+\subsection{Structural equivalence and its properties}
+\label{sec:equiv}
+\label{sec:structural-congruence}
+
+
+\begin{figure}[t]
+  \hrulefill
+  \begin{minted}{coq}
+    Class LtsEq (A L : Type) `{Lts A L} := {
+      eq_rel : A → A → Prop;
+
+      eq_rel_refl p : eq_rel p p;
+      eq_symm p q : eq_rel p q → eq_rel q p;
+      eq_trans p q r :
+      eq_rel p q → eq_rel q r → eq_rel p r;
+
+      eq_spec p q (α : Act L) :
+      (∃ p', (eq_rel p p') ∧ p' ⟶{α} q)
+      →
+      (∃ q', p ⟶{α} q' ∧ (eq_rel q' q))
+    }.
+  \end{minted}
+  \caption{A typeclass for LTSs where a structural congruence exists over states.}
+  \label{fig:LtsEq}
+  \hrulefill
+\end{figure}
+
+\begin{figure}[t]
+$$
+\begin{array}{r@{\hskip 3pt}ll}
+%%rulename{S-refl} & p \equiv p\
+%%\rulename{S-var} & K \equiv K\\
+%\rulename{S-success} & 1 \equiv 1\\
+%\rulename{S-output} & \co{\mu} \equiv \co{\mu}\\
+
+%\rulename{S-input} & \mu.p \equiv \mu.q  & \mathit{if} p \equiv q\\
+  %\rulename{S-tau} & \tau.p \equiv \tau.q  & \mathit{if} p \equiv q\\
+%\rulename{S-infsum} & \Sigma_{j \in J} \alpha_j.p_j \equiv \Sigma_{i \in I} \alpha_i.p_i  & \mathit{if\ } \forall j \in J, \exists i \in I, \alpha_j = \alpha_i \mathit{\ and\ } p_j \equiv p_i\\
+%& & \mathit{and\ } \forall i \in I, \exists j \in J, \alpha_i = \alpha_j \mathit{\ and\ } p_i \equiv p_j
+\\[1em]
+\rulename{S-szero} & p \extc \Nil \equiv p \\
+\rulename{S-scom} & p \extc q \equiv q \extc p \\
+\rulename{S-sass} &  (p \extc q) \extc r \equiv p \extc (q \extc r)
+\\[1em]
+\rulename{S-pzero} & p \Par \Nil \equiv p \\
+\rulename{S-pcom} & p \Par q \equiv q \Par p \\
+\rulename{S-pass} &  ( p \Par q ) \Par r \equiv p \Par (q \Par r)
+\\[1em]
+\rulename{S-refl}& p \equiv p \\
+\rulename{S-symm} & p \equiv q & \mathit{if} \ q \equiv p\\
+\rulename{S-trans} & p \equiv q & \mathit{if} \ p \equiv p' \ \mathit{and} \ p' \equiv q
+\\[1em]
+\rulename{S-prefix} & \alpha.p \equiv \alpha.q  & \mathit{if} p \equiv q\\
+\rulename{S-sum} & p \extc q \equiv p' \extc q & \mathit{if}  p \equiv p'\\
+\rulename{S-ppar} & p \Par q \equiv p' \Par q & \mathit{if}  p \equiv p'
+\end{array}
+$$
+\caption{Rules to define structural congruence on \ACCS.}
+\label{fig:equiv}
+\hrulefill
+\end{figure}
+
+
+
+%% STRUCTURAL EQUIVALENCE
+To manipulate the syntax of processes we use
+a standard structural congruence denoted~$\equiv$,
+stating that~$\ACCS$ is a commutative monoid with identity~$\Nil$
+with respect to both sum and parallel composition. %(\coqSC{sc_proc}).
+
+
+A first fact is the following one.
+\begin{lemma}%[\coqNorm{weak_swap_output}]
+  \label{lem:weak-output-swap}
+  For every $\mu \in \co{\Names}$ and $\alpha \in \Acttau$,
+  if $p \wt{\mu.\alpha} q$
+  then $p \wt{\alpha.\mu} \cdot \equiv q$.
+\end{lemma}
+
+
+
+%%%%%%%%%%%%%%%%%%%%
+%% WHY THE GLOBAL MAILBOX IS WORTHWHILE ?
+%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% MULTISETS. NO LONGER NEEDED HERE (gio: I THINK)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% \paragraph{Mailbox as multiset.} %
+%% Let~$\MO$ denote the set of all finite multisets of output actions, for instance
+%% $$
+%% \varnothing, \mset{ \co{ a } }, \mset{ \co{ a },   \co{ a }  }, \mset{ \co{ a },  \co{ b },  \co{ a },  \co{ b }} \in \MO
+%% $$
+%% Similarly, let $\MI$ denote the set of all finite multisets of names.
+%% %\ilacom{Why are the elements of $\MI$  required to be finite while those of $\MO$ are not?}
+%% We let $\I, \J, \ldots$ range over $\MI$ and $M, N, \ldots$ range over $\MO$.
+%% The symbol $M$ stands for {\em mailbox}.
+%% We denote with $\uplus$ multiset union, and with $\setminus$
+%%   multiset subtraction; if $X$ is a set and $Y$ is a multiset, we let
+%% $\intersection{X}{Y}$ and $\union{X}{Y}$ be the {\em sets} defined in
+%%   the obvious way. We write $\disjoint{X}{Y}$ to mean that $\intersection{X}{Y} = \emptyset$.
+
+
+
+
+%% %%% MAILBOX
+%% \paragraph{Global mailbox}
+As sum and parallel composition are commutative monoids, we
+use the notation
+$$
+\begin{array}{lll}
+  \Sigma \set{g_0, g_1, \ldots g_n} &\text{ to denote }&g_0 \extc g_1 \extc \ldots \extc g_n \\
+  \Pi \set{p_0, p_1, \ldots p_n}&\text{ to denote }&p_0 \Par p_1 \Par \ldots \Par p_n
+\end{array}
+$$
+This notation is useful to treat the global shared mailbox.
+In particular, if $\mset{ \mu_0, \mu_1, \ldots \mu_n} $
+is a multiset of output actions, then the syntax $\Pi  \mset{ \mu_0,
+  \mu_1, \ldots \mu_n} $ represents the shared mailbox that contains
+the messages $\mu_i$; for instance $\Pi \mset{ \co{a}, \co{a}, \co{c}
+} = \mailbox{ \co{ a  } \Par \co{ a } \Par \co{c}}$.
+We use the colour $\mailbox{ - }$ to highlight the content of the mailbox.
+Intuitively a shared mailbox contains the messages
+% that have been output, and
+that are ready to be read, i.e. the outputs % messages
+that are immediately available (i.e. not guarded by any prefix operation).
+For example in
+$$
+\mailbox{\co{c}} \Par a.(\co{b} \Par c.d.\Unit) \Par \mailbox{\co{d}} \Par \tau.\co{e}
+$$
+the mailbox is $\mailbox{\co{c} \Par \co{d}}$.
+%% For example % $ \mailbox{ \co{a} \Par  \co{b} \Par \co{c} } $ is the
+%%             % shared mailbox of the process in \req{example1}, while
+%% in the following term
+%% $$
+%% \out{ a } \Par a.\Unit \Par \out{ a } \Par b.\Nil \extc d.\Nil \Par \out{c}
+%% $$
+%% the shared mailbox is $ \mailbox{ \co{ a  } \Par \co{ a } \Par \co{c} } = \Pi \mset{ \co{a}, \co{a}, \co{c} }$.
+The global mailbox that we denote with $\mailbox{ - }$ is exactly the
+  buffer $B$ in the {\em configurations} of
+  \cite{DBLP:phd/us/Thati03}, and reminiscent of the $\omega$ used by
+  \cite{DBLP:conf/fossacs/BravettiLZ21}. The difference is that $\omega$
+  represents an unbounded {\em ordered} queue, while our mailbox is
+  an unbounded {\em unordered} buffer.
+
+
+
+As for the relation between output actions in the LTS and the global
+mailbox, an output $\co{\aa}$ can take place if and only if %there is
+the message $\co{\aa}$ appears in the mailbox:
+\begin{lemma}
+  \label{lem:output-shape}
+  For every $\state \in \ACCS$,
+  \begin{enumerate}
+    \item% (\coqLTS{output_shape})
+      for every $\aa \in \Names \wehavethat \state \st{
+        \co{\aa} } \stateA$ implies %% if and only if
+      $\state \equiv  \stateA \Par
+      \mailbox{\co{\aa}}$,
+    \item% (\coqSyn{mo_shape})
+      there exists $ \stateA $ such that
+      $\state \equiv  \stateA \Par \mailbox{ \Pi M }$,
+      and  $\stateA$ performs no output action.% (\coqLTS{rmo_output_spec}).
+%      \pl{should we say something about $M$ here ?}
+  \end{enumerate}
+\end{lemma}
+\noindent
+This lemma and \rlem{weak-output-swap} essentially hold, because, as already pointed out in \rsec{preliminaries}, the syntax enforces outputs to have no continuation.
+
+
+
+
+
+The following lemma states a fundamental fact
+(\cite[Lemma 2.13%pag. 31
+]{DBLP:books/daglib/0018113},
+\cite[Proposition 5.2%pag. 40
+]{DBLP:books/daglib/0098267},
+\cite[Lemma 1.4.15]{DBLP:books/daglib/0004377}).
+Its proof is so tedious that even the references we have given only
+sketch it. In this paper we follow the masters example, and give
+merely a sketch. However, we have a complete machine-checked proof.
+
+\begin{lemma}%(\coqLTS{harmony})
+%  \label{lem:harmony}
+  \label{lem:st-compatible-with-equiv}
+  For every $p,q \in \ACCS$ and $\alpha \in \Act_{\tau} \wehavethat p \equiv \cdot \st{\alpha} q \implies p  \st{\alpha} \cdot \equiv q$.
+\end{lemma}
+\begin{proof}[Proof sketch]
+  We need to show that if there exists a process $p'$ such that $p \equiv p'$
+  and $p' \st{\alpha} q$ then there exists a process $q'$ such that $p \st{\alpha} p'$
+  and $p' \equiv q$.
+  The proof is by induction on the derivation $p \equiv p'$.
+
+  We illustrate one case with the rule \rulename{S-trans}.
+  The hypotheses tell us that there exists $\hat{p}$ such that $p \equiv \hat{p}$ and $\hat{p} \equiv p'$,
+  that $p' \st{\alpha} q$,  and the inductive hypotheses that
+  \begin{enumerate}[(a)]
+  \item\label{pt:preharmony-case-1}
+    for all $q'$ \textit{s.t} $\hat{p} \st{\alpha} q'$ implies that there exists a $\hat{q}$ such that $p \st{\alpha} \hat{q}$ and $\hat{q} \equiv q'$
+  \item\label{pt:preharmony-case-2}
+    for all $q'$ \textit{s.t} $p' \st{\alpha} q'$ implies that there exists a $\hat{q}$ such that $\hat{p} \st{\alpha} \hat{q}$ and $\hat{q} \equiv q'$
+  \end{enumerate}
+  By combining \rpt{preharmony-case-2} and $p' \st{\alpha} q$ we obtain a
+  $\hat{q}_1$ such that $\hat{p} \st{\alpha} \hat{q}_1$ and $\hat{q}_1 \equiv q$.
+  Using \rpt{preharmony-case-1} together with $\hat{p}_1 \st{\alpha} \hat{q}_1$ we have that
+  there exists a $\hat{q}_2$ such that $p \st{\alpha} \hat{q}_2$ and $\hat{q}_2 \equiv \hat{q}_1$.
+  We then have that $p \st{\alpha} \hat{q}_2$ and it remains to show that $\hat{q}_2 \equiv q$.
+  We use the transitivity property of the structural congruence relation to show that
+  $\hat{q}_2 \equiv \hat{q}_1$ and $\hat{q}_1 \equiv q$ imply $\hat{q}_2 \equiv q$ as required
+  and we are done with this case.
+\end{proof}
+\noindent
+Time is a finite resource. The one spent to machine check
+\rlem{st-compatible-with-equiv} would have been best invested into bibliographical research.
+Months after having implemented the lemma we realised that
+\cite{DBLP:journals/entcs/AffeldtK08} already had 
+an analogous result for a mechanisation of the $\pi$-calculus.
+\rlem{st-compatible-with-equiv} is crucial to prove the Harmony Lemma,
+which states that~$\tau$-transitions coincide with the standard reduction
+relation of \ACCS. This is out of the scope of our discussion,
+and we point the interested reader to Lemma 1.4.15 of
+\cite{DBLP:books/daglib/0004377}, and to the list of problems
+presented on the web-page of \textsc{The Concurrent Calculi Formalisation Benchmark}.\footnote{\url{https://concurrentbenchmark.github.io/}}
+
+
+We give a corollary that is useful to prove \rlem{ACCSmodulos-equiv-is-out-buffered-with-feedback}.
+\begin{corollary}
+  \label{cor:equiv-preserves-transitions-modulo-equiv}
+  \label{cor:equiv-preserves-transitions}
+For every $p,q \in \ACCS, \and \alpha \in \Acttau \wehavethat p \equiv q$ implies that
+$p \st{ \alpha } \cdot \equiv r$ if and only if $q \st{ \alpha } \cdot \equiv r$.
+\end{corollary}
+\begin{proof}
+  Since $q \equiv p \st{ \alpha } p' \equiv r$ \rlem{st-compatible-with-equiv} implies $q \st{\alpha} \cdot \equiv p'$,
+  thus $q \st{\alpha} \cdot \equiv r$ by transitivity of $\equiv$.
+  The other implication follows from the same argument and the symmetry of $\equiv$.
+\end{proof}
+
+
+
+
+%%% ACCS PROCESSES ARE OUT-BUFFERED WITH FEEDBACK
+A consequence of \rlem{output-shape} is that the LTS
+\lts{\modulo{\ACCS}{\equiv}}{\modulo{\st{}}{\equiv}}{\Acttau}
+enjoys the axioms in \rfig{axioms}, and thus it is \obaFB.
+\cite[Theorem 4.3]{DBLP:conf/concur/Selinger97} proves it reasoning modulo
+bisimilarity, while we reason modulo structural equivalence.
+\begin{lemma}%[COQ LINK]
+\label{lem:ACCSmodulos-equiv-is-out-buffered-with-feedback}
+$\Forevery p \in \ACCS,$ and $\aa \in \Names$ the following properties are true,
+\begin{itemize}
+\item% [\outputcommutativity]%
+  $\forevery \alpha \in \Acttau \wehavethat p \st{\co{\aa}}\st{\alpha} p_3$ implies $ p \st{ \alpha }\st{ \co{\aa}} \cdot \equiv p_3$;
+\item% [\outputconfluence]
+  $\forevery \alpha \in \Acttau \suchthat
+  \alpha \not\in\set{ \tau, \co{\aa}} \wehavethat p \st{\co{\aa}} p'
+  \text{ and } p \st{\alpha} p''$ imply that $p'' \st{\co{\aa}} q \text{ and }p' \st{\alpha} q$ for some $q$;
+\item% [\outputdeterminacy]
+  $ p \st{\co{\aa}} p' \text{ and } p \st{\co{\aa}} p'' \imply p' \equiv p''$;
+\item% [\outputfeedback]
+  $p \st{\co{\aa}} p' \st{\aa} q \implies p \st{\tau} \cdot \equiv  q$;
+\item% [\outputtau]
+  $ p \st{\co{\aa}} p' \text{ and } p \st{\tau} p'' \imply$ that $p' \st{\tau} q$ and $p'' \st{\co{\aa}} q$; or that $p' \st{\tau} p''$.
+  \item  $\forevery p'$ if there exists a $\hat{p}$ such that
+   $p \st{\co{\aa}} \hat{p}$ and $p' \st{\co{\aa}} \hat{p}$
+   then $p \equiv p'$
+\end{itemize}
+\end{lemma}
+\begin{proof}
+  To show \axiom{feedback} we begin via \rlem{output-shape}
+  which proves $p \equiv p' \Par \mailbox{\co{\aa}}$.
+  We derive $p' \Par \mailbox{\co{\aa}} \st{ \tau } q'$
+  and apply \rcor{equiv-preserves-transitions-modulo-equiv} to obtain
+  $ p \st{\tau} \cdot \equiv q $.
+
+  We prove \axiom{Output-Tau}.
+  The hypothesis and \rlem{output-shape} imply that $ p \equiv p' \Par \mailbox{\aa}$.
+  Since $ p \st{ \tau } p'' $ it must be the case that
+  $ p' \st{ \tau } \hat{p}$ for some $ \hat{p}$,
+  and $p'' =  \hat{p} \Par \mailbox{\aa}$.
+  Let $q = \hat{p}$. We have that $ p'' \st{ \aa } \hat{p} \Par \Nil \equiv q$.
+\end{proof}
+\noindent
+Processes that enjoy \axiom{Output-Tau} are called {\em
+non-preemptive} in \cite[Definition
+10]{DBLP:conf/lics/CleavelandZ91}.
+
+
+%%% TODO: WHAT IS THIS LEMMA USEFULL FOR ?
+Each time a process $\state$ reduces to a {\em stable} process
+$\stateA$, it does so by consuming at least part of the mailbox, for
+instance a multiset of outputs $N$, thereby arriving in a state
+$\stateB$ whose inputs cannot interact with what remains of the
+mailbox, i.e. $M \setminus N$, where $M$ is the original mailbox.
+
+\begin{lemma}
+  %(\coqMT{inversion_weak_a_unroll_inputs})
+  \label{lem:completeness-part-2.2-squigly-02}
+  $\Forevery M \in \MO$, $p, \stateA \in \ACCS, $
+  if $p \Par \mailbox{ \Pi M } \wt{\varepsilon} \stateA \stable$
+  then there exist an $N \subseteq M$ and some $\stateB \in \ACCS$
+  such that $p \wt{ \co{N} } \stateB  \stable$, $O(\stateB) \subseteq O( \stateA )$, and
+  $\disjoint{\co{ I( \stateB ) }}{(M \setminus N)}$.
+\end{lemma}
+\begin{proof}By induction on the derivation of $p \Par \mailbox{ \Pi M } \wt{\varepsilon} \stateA$.%
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %%% DETAILED ARGUENT. DO NOT EREASE.
+  %%% DETAILED ARGUENT. DO NOT EREASE.
+  %%% DETAILED ARGUENT. DO NOT EREASE.
+%  \leaveout{%%
+  In the base case this is due to \wtrefl, which ensures that
+  $$
+  p  \Par \mailbox{ \Pi M } = \stateA,
+  $$
+  from which we obtain $p  \Par \mailbox{ \Pi M } \stable$.
+  This ensures that  $\disjoint{ \co{I(p)} }{ M }$.% and that $p \stable$.
+  We pick as $\stateB$ and $N$ respectively $p  \Par \mailbox{ \Pi M }$
+  and $\emptyMset$ as $p \Par \mailbox{ \Pi M } \wt{ \emptyMset } p \Par \mailbox{ \Pi M }$ by reflexivity,
+  and $O( p  \Par \mailbox{ \Pi M } ) = O( \stateA )$.
+
+    In the inductive case the derivation ends with an application of \wttau and
+    $$
+    \begin{prooftree}
+      \state  \Par \mailbox{ \Pi M } \st{\tau} p'
+      \quad
+      \begin{prooftree}
+        \vdots
+        \justifies
+        p'\wt{\varepsilon} \stateA
+        \end{prooftree}
+      \justifies
+       \state  \Par \mailbox{ \Pi M } \wt{\varepsilon} \stateA
+    \end{prooftree}
+    $$
+
+    We continue by case analysis on the rule used to infer the transition $\state  \Par \mailbox{ \Pi M  } \st{\tau} p'$.
+    As by definition $\mailbox{ \Pi M } \stable$, the rule
+    is either \parL, i.e. a $\tau$-transition performed by $\state$,
+    or \com, i.e. an interaction between $\state$ and $\mailbox{ \Pi M  }$.
+
+    \paragraph{Rule \parL:}
+    In this case $ \state \st{\tau} p'' $ for some $p''$, thus $p''
+    \Par \mailbox{ \Pi M  } \wt{ \varepsilon } \stateA $ and the
+    result follows from the inductive hypothesis.
+
+    \paragraph{Rule \com:}
+    The hypothesis of the rule ensure that~$\state \st{\aa} p''$
+    and~$\mailbox{  \Pi M  } \st{\co{\aa}} \stateA$,
+    and as the process~$\mailbox{ \Pi M  }$ does not perform any
+    input, it must be the case that
+    $\aa \in \Names$, that  $\co{\aa} \in M$, and that $q \equiv
+    \mailbox{ \Pi (M \setminus \mset{\co{\aa}} ) }$.\footnote{In terms
+    of LTS with mailboxes, $\stateA = (M \setminus \mset{\co{\aa}})
+    $.}
+    Note that
+    $p' \equiv p'' \Par \mailbox{  \Pi (M \setminus \mset{\co{\aa}}) } $.
+
+
+    The inductive hypothesis ensures that for some $N' \subseteq M
+    \setminus \mset{\co{\aa}}$ and some $\stateC \in \ACCS$
+    we have
+    \begin{enumerate}[(a)]
+    \item $p' \wt{ \co{N'} } \stateC  \stable$,
+    \item\label{completeness-part-2.2-squigly-02-output-subseteq-IH}
+      $O(\stateC) \subseteq O(\stateA)$, and
+    \item\label{completeness-part-2.2-squigly-02-input-subseteq-IH}
+      $\disjoint{\co{ I(\stateC) }}{((M \setminus \mset{ \co{\aa} })
+      \setminus N')}$
+    \end{enumerate}
+    We conclude by letting $ \stateB = \stateC$, and $N = \mset{\aa} \uplus N'$.
+    The trace $p \st{\aa} p' \wt{ N' } \stateC$ proves that $p \wt{
+      \mset{\aa} \uplus N' } \stateC$,
+    moreover we already know that $\stateC$ is stable.
+    The set inclusion $O(\stateC) \subseteq O( \stateA )$ follows from
+    \ref{completeness-part-2.2-squigly-02-output-subseteq-IH},
+    and lastly $\disjoint{\co{I(\stateB)}}{(M \setminus
+      (\mset{\co{\aa}} \uplus N'))}$ is a consequence of
+    $\disjoint{\co{ I(\stateC) }}{((M \setminus \mset{ \co{\aa} })
+      \setminus N')}$ and of
+    $ (M \setminus \mset{\co{\aa}}) \setminus N' = (\I \setminus
+    (\mset{\co{\aa}} \uplus N'))$.
+%%  } %%% leaveout
+  %%% END DETAILED ARGUMENT
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{proof}
+
+
+
+We define the predicate $\goodSym$,% (\coqMT{happy}),
+ $$
+ \begin{array}{lll}
+   \good{\Unit} \\
+   \good{p \Par q}  &\mathit{if}\ \good{p}\, \mathit{or}\, \good{q}\\
+   \good{p \extc q} &\mathit{if}\ \good{p}\, \mathit{or}\, \good{q}\\
+ \end{array}
+ $$
+ \noindent
+ % that of course it
+ This predicate is preserved by structural congruence.
+ \begin{lemma}%[\coqMT{sc_proc_preserves_happiness}]
+  \label{lem:happy-sc}
+  $\Forevery \serverA, \serverB \in \ACCS \wehavethat \serverA \equiv \serverB$ and $\good{\serverA} \imply \good{\serverB}$.
+\end{lemma}
+
+
+
+
+\begin{lemma}%[\coqLTS{sc_proc_preserves_terminate}]
+  \label{lem:terminate-sc}
+  For every $p, q \in \ACCS \wehavethat p \equiv q$ and $p \convi$ imply $q \convi$.
+\end{lemma}
+
+\begin{lemma}%[\coqConv{sc_proc_preserves_acnv}]
+  \label{lem:acnv-sc}
+  For every $\serverA, \serverB \in \ACCS$ and $\trace \in \Actfin$, we have that $\serverA \equiv \serverB$ and $\liftFW{\serverA} \cnvalong \trace$
+  imply $\liftFW{\serverB} \cnvalong \trace$.
+\end{lemma}
+
+
+\begin{lemma}%[\coqMT{must_sc_client}]
+  \label{lem:must-sc-client}
+  $\Forevery  \serverA, \client, \client' \in \ACCS \wehavethat \client \equiv \client'$ and $\musti{\serverA}{\client}$ then $\musti{\serverA}{\client'}$.
+\end{lemma}
+
+\begin{lemma}%[\coqMT{must_sc_server}]
+  \label{lem:must-sc-server}
+  $\Forevery \serverA, \serverB, \client  \in \ACCS \wehavethat \serverA \equiv \serverB$ and $\musti{\serverA}{\client}$ then $\musti{\serverB}{\client}$.
+\end{lemma}
+
+
+\newcommand{\serverC}{q'}
+%% \gb{The next lemma is used in \rlem{weaka-congr-switch-s}.
+%%   \TODO{Where is its proof ?}}
+%% \begin{lemma}
+%% \label{lem:wta-congr-join}
+%% For every $\serverA, \serverB, \serverC  \in \ACCS$,
+%% sequence $\traceA, \traceB \in \Actfin$,
+%% if $  \serverA \wta{ \traceA } \cdot \equiv \serverB $ and $ \serverB \wta{ \traceB } \cdot \equiv \serverC$,
+%% then $\serverA \wta{ \traceA.\traceB } \cdot \equiv \serverC$.
+%% \end{lemma}
+
+
+%%%% TECHNICALITIES
+
+%% In the composition $\server \Par \mailbox{\co{\aa}}$ the process~$\server$ can interact
+%% with the mailbox~$ \mailbox{\co{\aa}} $, because $\server \sta{\aa}$.
+%% This kind of interaction with the mailbox does not impact convergence,
+%% and in fact a mailbox on the left-hand side of $\cnvalong$ can be transformed into
+%% a series of input actions on the right-hand side of the predicate.
+
+%% \renewcommand{\traceB}{t}
+%% \begin{lemma}
+%%  \label{lem:acnv-unroll-lts}\label{lem:acnv-unroll}
+%%   $\Forevery p \in \ACCS$ and $ \trace, \traceB \in \Actfin$,
+%%   \begin{enumerate}
+%%   \item %(\coqConv{acnv_retract_input})
+%%     \label{pt:acnv-unroll-lts}%
+%%     for every $\aa \in \Names$,
+%%     $(p \Par \mailbox{\co{\aa}}) \acnvalong \traceB$ if and only if
+%%     $p \acnvalong \aa.\traceB$;
+%%   \item %(\coqConv{acnv_unroll})
+%%     \label{pt:acnv-unroll}%
+%%     for every
+%%     $s \in \Names^\star$,
+%%     $(p \Par \mailbox{\Pi\co{s}}) \acnvalong \traceB$ if and only if
+%%     $p \acnvalong \trace.\traceB$.
+%%   \end{enumerate}
+%% \end{lemma}
+
+
+
+A typical technique to reason on the LTS of concurrent processes, and
+so also of \svrclt systems, is trace zipping:
+if $p \wt{s} p'$ and $q \wt{ \co{s }} q'$, an induction on $s$ ensures
+that $p \Par q \wt{ } p' \Par q'$.
+Zipping together different LTS is slightly more delicate: we can zip
+weak transitions $ \wta{ s } $ together with the co-transitions $ \wt{
+  \co{s} } $, but possibly moving inside equivalence classes of $\equiv$
+instead of performing actual transitions in $\st{}$.
+
+
+%% \gb{TODO: how is zipping written without parallel composition and
+%%   structural equivalence ?}
+\begin{lemma}[Zipping]
+  \label{lem:zipping}
+  For every $p,q \in \ACCS$
+  \begin{enumerate}
+  \item %(\coqLTS{zip_lts_a_mu})
+    \label{pt:zipping-strong}%(\coqConv{zip_lts_a_mu})
+    $\forevery \mu \in \Act \wehavethat$
+    if $p \sta{ \mu } p'$ and $q \st{\co{ \mu }} q'$ then
+    $p \Par q \st{\tau}  p' \Par q'$ or $p \Par q \equiv p' \Par q'$;
+
+  \item %(\coqLTS{zip_wt_congr_s})
+    \label{pt:zipping-weak}%(\coqConv{zip_wta_congr_s})
+    $\forevery s \in \Actfin \wehavethat$
+    if $p \wta{s} p'$ and $q \wt{\co{s}} q'$ then
+    $ p \Par q \wt{\varepsilon} \cdot \equiv p' \Par q'$.
+  \end{enumerate}
+\end{lemma}
+%% \begin{lemma}[(\coqConv{zip_lts_a_mu},\coqConv{zip_wta_congr_s}) Zipping]
+%% \label{lem:zipping}
+%% For every $p,q \in \ACCS$
+%%   \begin{enumerate}[(i)]
+%%   \item\label{pt:zipping-strong}%(\coqConv{zip_lts_a_mu})
+%%   $\forevery \mu \in \Act \wehavethat$
+%%     if $p \sta{ \mu } p'$ and $q \st{\co{ \mu }} q'$ then
+%%     $p \Par q \st{\varepsilon}  p' \Par q'$ or $p \Par q \equiv p' \Par q'$;
+
+%%   \item\label{pt:zipping-weak}%(\coqConv{zip_wta_congr_s})
+%%   $\forevery s \in \Actfin \wehavethat$
+%%   if $p \wta{s} p'$ and $q \wt{\co{s}} q'$ then
+%%     $ p \Par q \wt{\varepsilon} \cdot \equiv p' \Par q'$.
+%%   \end{enumerate}
+%% \end{lemma}
+%% \noindent
+%% \rlem{zipping} let us compose transitions in the two {\em different}
+%% LTS $\st{}$ and $\sta{}$ to construct - up-to structural equivalence -
+%% a weak computation in the first one, i.e. $\wt{}$. The reflexivity
+%% of both $\equiv$ and $\wt{}$ is necessary to prove the lemma.
+
+%% \begin{example}
+%%   \gb{show that if either relation is not reflexive then zipping  is false.}
+%% \end{example}
+
+
+
+Obviously, for every $\serverA,\serverB \in \States$ and output $\aa \in \Names$ we have
+\begin{align}
+\label{eq:sta-tau-iff-st-tau}
+  \serverA \sta{\tau} \serverB \text{ if and only if } \serverA \st{\tau}   \serverB\\
+\label{eq:wta-epsilon-iff-wt-epsilon}
+  \serverA \wta{ \varepsilon }  \serverB \text{ if and only if } \serverA \wt{ \varepsilon }  \serverB\\
+\label{eq:output-sta-st}
+ \serverA \sta{\co{\aa}}  \serverB\text{ if and only if } \serverA \st{\co{\aa}}  \serverB
+\end{align}
+%\ilacom{Isn't \ref{eq:wta-epsilon-iff-wt-epsilon} an immediate
+%  corollary of \ref{eq:sta-tau-iff-st-tau}?}\gb{Yes}\\
+\noindent
+together with the expected properties of finiteness,
+%(\coqLTS{lts_set_output_spec}, \coqLTS{lts_set_mu_a_spec}, \coqLTS{lts_set_tau_spec} and \req{sta-tau-iff-st-tau}),
+the first one amounting to the finiteness of the global mailbox in any state:
+%\ilacom{Note that $q$ is useless in the first property, it
+%  would be better to take it off given our notational conventions at p
+%  11.}
+\begin{align}
+{\cardinality{\setof{ \co{a} \in \co{\Names} }{ p \sta{\co{a}} }}} \in \N
+\\
+\Forevery \mu \in \Act \wehavethat {\cardinality{\setof{ q }{ p \sta{\mu} q }}} \in \N
+\\
+  {\cardinality{ %\reducts{p}{\ACCS}{\sta}
+      \setof{ q \in \States}{p \sta{\tau} q } }} \in \N
+\end{align}
+%% \begin{cor}
+%% \label{cor:sta-finite-image}
+%%   \begin{enumerate}
+%%   \item
+%%   (\coqLTS{lts_set_output_spec})  ${\cardinality{\setof{ \co{a} \in \co{\Names} }{ p \sta{\co{a}} q }}} \in \N$,
+%%   \item
+%%   (\coqLTS{lts_set_a_spec}) $\Forevery \mu \in \Act \wehavethat {\cardinality{\setof{ q }{ p \sta{\mu} q }}} \in \N$,
+%%   \item (\coqLTS{lts_set_tau_spec}) ${\cardinality{\reducts{p}{\ACCS}{\sta}}} \in \N$.
+%% %  \item $\Forevery s \in \Actfin\wehavethat {\cardinality{\setof{q}{ p \wta{s} q }}} \in \N$.
+%%   \end{enumerate}
+%% \end{cor}
+%The subscript $\hondatokoro$ is motivated by the surnames of authors
+%of \cite{DBLP:conf/ecoop/HondaT91}.
+
+
+%% \begin{lemma}
+%%   \label{lem:completeness-part-2.2-auxiliary}
+%%   (\coqMT{must_gen_a_with_s})
+%%   $\Forevery p \in \States, \trace \in \Actfin$,
+%%   and every finite set $\ohmy \subseteq \co{\Names}$,
+%%   if $p \acnvalong s$ then either
+%%   \begin{enumerate}[(i)]
+%%    \item\label{pt:completeness-crux-move-2}
+%%     there exists $\ogood \in \accht{p}{ \trace }$ such that $\ogood \subseteq \ohmy$, or
+%%     \item\label{pt:completeness-crux-move-1}
+%%     $\musti \csys{\server}{\testacc{ \trace }{ \co{ \ofun{\accht{p}{s}} \setminus \ohmy }}}$.
+%%   \end{enumerate}
+%% \end{lemma}
+
+
+\subsection{Client generators and their properties}
+\label{sec:client-generators}
+
+This subsection is devoted to the study of the semantic properties
+of the clients produced by the function $g$.
+In general these are the properties sufficient to obtain our
+completeness result.
+
+
+\begin{figure}[t]
+  \hrulefill
+  $$
+  \begin{array}{lll}
+    g(\varepsilon, \client) & = & \client  \\
+    g(\aa.\trace, \client) & = &  \mailbox{\co{\aa}} \Par g( \trace , \client)  \\
+    g(\co{\aa}.\trace, \client) & = & \aa . g(\trace , \client) \extc \tau.\Unit
+  \end{array}
+  $$
+  \begin{align}
+    c( \trace ) & = g( \trace ,\tau.\Unit) \label{def:cs} \\
+    %  \ttrace{s} & = g(s,\Nil) \label{def:fs} \\
+    \tacc{ \trace }{L} & = g(\trace ,h(L)) \ \mathit{where} \ h(L) = \Pi\setof{ \mu.\Unit }{\mu \in L }  \label{def:tsL}
+  \end{align}
+  \caption{Functions to generate clients.}
+    %(\coqCom{gen_test}, \coqCom{gen_conv}, %\coqMT{gen_nil}, \coqCom{gen_a}).}
+  \label{fig:test-generators}
+  \label{fig:client-generators}
+  \hrulefill
+\end{figure}
+
+
+
+
+\begin{lemma}%[\coqMT{gen_test_reduces_if}]
+  \label{lem:gen-reduces-if}
+  \label{lem:gs-reduces}
+  For every $\server \in \ACCS$ and $\trace \in \Actfin$, if $\server \st{\tau}$ then $g( \server , \trace ) \st{\tau}$.
+\end{lemma}
+\begin{proof}
+By induction on the sequence $\trace$.
+In the base case $s = \varepsilon$. The test generated by~$g$ is~$\server$,
+which reduces by hypothesis, and so does $g(\varepsilon,  \server )$.
+In the inductive case $\trace = \alpha.\traceB$, and we proceed by case-analysis on $\alpha$.
+If~$\alpha$ is an output then $g(\alpha.\traceB,  \server) = \co{\alpha}.(g(\traceB,  \server)) \extc \tau.\Unit$
+which reduces to $\Unit$ using the transition rule \extR.
+If $\mu$ is an input then $g(\alpha.\traceB,  \server) = \mailbox{ \co{\alpha} } \Par g(\traceB,  \server)$
+which reduces using the transition rule
+\parR and the inductive hypothesis, which ensures that
+$g(\traceB,  \server)$ reduces.
+\end{proof}
+
+
+\begin{lemma}%[\coqMT{gen_test_unhappy_if}]
+  \label{lem:gen-test-unhappy-if}
+  For every $p$ and $s$, if $\lnot \good{p}$ then for every $s$,  $\lnot \good{g(s, p)}$.
+\end{lemma}
+\begin{proof}
+The argument is essentially the same of \rlem{gen-reduces-if}
+\leaveout{%
+The proof is by induction on the sequence $s$.
+In the base case $s = \varepsilon$. The generated test is $p$ and the hypothesis
+tells us that $\lnot \good{p}$.
+In the inductive case $s = \mu.s'$ and our inductive hypothesis tells us
+that $\lnot \good{ g(s', p)}$.
+We proceed by case-analysis on $\mu$.
+If $\mu$ is an input then $g(\mu.s', p) = \mailbox{ \co{\mu} } \Par g(s', p)$ which reduces using the transition rule \parR and the inductive hypothesis tells us that $g(s', p)$ is unhappy,
+as is $\co{\mu} \Par g(s', p)$ since $\lnot\good{\co{\mu}}$.
+If $\mu$ is an output then $g(\mu.s', p) = \co{\mu}.(g(s', p)) \extc \tau.\Unit$ which
+is unhappy.}
+\end{proof}
+
+
+
+
+
+%% LEAVE IT HERE FOR THE TIME BEING CAUSE THE PROOF SEEMS OK
+%% \begin{lemma}
+%%   \label{lem:gs-input}
+%%   For every $s \in \Actfin$, if $\gen{s}{q} \st{ \mu } o$ with $\mu \in \Names$
+%%   then either
+%%   \begin{enumerate}[(a)]
+%%     \item $q \st{\mu} q'$, $s \in \Names^\star$, and $o = \Pi \co{s} \Par q'$, or
+%%     \item
+%%       $s = \traceA. \out{\mu}. \traceB$ with $\traceA \in \Names^{\star}$,
+%%       $\gen{s}{q} \equiv \Pi \out{\traceA} \Par (\tau.\Unit \extc \mu.\gen{\traceB}{q})$,
+%%       and $o \equiv \Pi \out{\traceA} \Par \gen{\traceB}{q}$.
+%%   \end{enumerate}
+%% \end{lemma}
+%% \begin{proof}
+%%   The proof is by induction on $s$.
+
+%%   In the case, $s = \varepsilon$, and hence
+%%   by definition $\gen{s}{q} = q$. The
+%%   the hypotheses $\gen{s}{q} \st{ \mu }$ implies
+%%   $q \st{\mu} o$.
+
+
+%%   In the inductive case, $s = \nu . s'$.
+%%   We have two cases, depending on whether $\nu$ is an output action
+%%   or an input action.
+%%   Suppose $\nu$ is an output. In this case
+%%   $\gen{s}{q} = \tau.\Unit \extc \co{\nu}.\gen{s'}{q}$.
+%%   The hypothesis $\gen{s}{q} \st{ \mu }$ ensures that $\out{\nu} = \mu$.
+%%   By letting $\traceA = \varepsilon$ and $\traceB = s'$ we obtain the required
+%%   $$
+%%   \gen{s}{q} = \tau.\Unit \extc \mu.\gen{\traceB}{q} \equiv \Pi \co{\traceA} \Par (\tau.\Unit \extc \mu.\gen{\traceB}{q})
+%%   $$
+%%   and $ o \equiv \Pi \co{\traceA} \Par \gen{\traceB}{q}$.
+
+
+%%   Now suppose that $\nu$ is an input. By definition $\gen{s}{q} = \out{\nu} \Par \gen{s'}{q}$.
+%%   Since $\mu$ is an input and $ \out{\nu}$ is an output, the transition
+%%   $\gen{s}{q} \st{ \mu } o$ must be due to a transition $\gen{s'}{q} \st{\mu} o'$,
+%%   and
+%%   \begin{equation}
+%%     \label{eq:gs-input-shape-o}
+%%     o = \out{\nu} \Par o'
+%%   \end{equation}
+%%   The inductive hypothesis ensures that either
+%%   \begin{enumerate}[(1)]
+%%   \item\label{pt:gs-input-1} $q \st{\mu} q'$, $s' \in \Names^\star$, and $o' = \Pi \co{s'} \Par q'$, or
+%%   \item\label{pt:gs-input-2} $    s' =  s'_1 \out{\mu} s'_2$, for some $s'_1 \in \Names^{\star} $ and $\traceB \in \Actfin$,and
+%%   %% $$
+%%   %% \begin{array}{lll}
+%%     \begin{align}
+%%       \label{eq:gs-input-shape-gs'}
+%%       \gen{s'}{q}  & \equiv  \Pi \out{s'_1} \Par (\tau.\Unit \extc \mu.\gen{s'_2}{q}),\\
+%%       \label{eq:gs-input-shape-o'}
+%%       o' & \equiv  \Pi \out{s'_1} \Par \gen{s'_2}{q}
+%%     \end{align}
+%%   %% \end{array}
+%%   %% $$
+%%   \end{enumerate}
+
+%%   In case \ref{pt:gs-input-1}, since $\nu$ is an input we know $s \in \Names^\star$,
+%%   and \req{gs-input-shape-o} implies $ o = \Pi \co{s} \Par q'$, thus we are done.
+
+
+%%   In case \ref{pt:gs-input-2}, let $\traceA = \nu.s'_1 $, $\traceB = s'_2$.
+%%   Since $\nu$ is an input we have $ \traceA \in \Names^{\star}$.
+%%   The equalities $s = \nu.s'$  and $ s' =  s'_1 . \out{\mu} . s'_2$
+%%   imply that $s = \traceA \out{\mu} \traceB$.
+%%   Now we proced as follows,
+%%   $$
+%%   \begin{array}{lllr}
+%%     g(s,q) & = & \out{\nu} \Par t(s',L,I) & \text{By definition} \\
+%%     & \equiv & \out{\nu} \Par (\Pi \out{s'_1} \Par (\tau.\Unit \extc \mu.g(s'_2,q)))&\text{By } \req{gs-input-shape-gs'} \\
+%%     & \equiv &
+%%     (\out{\nu} \Par \Pi \out{s'_1}) \Par (\tau.\Unit \extc \mu.g(s'_2,q))
+%%  & \text{Associativity}\\
+%%     & \equiv & \Pi \out{\traceA} \Par (\tau.\Unit \extc \mu.g(s'_2,q)) & \text{Because } \traceA = \nu.s'_1 \\
+%%     & \equiv & \Pi \out{\traceA} \Par (\tau.\Unit \extc \mu.q(\traceB,q)) & \text{Because } \traceB = s'_2 \\
+%%   \end{array}
+%%   $$
+%%   The required $ o \equiv \Pi \out{\traceA} \Par g(s'_2,q)$
+%%   follows from $o' \equiv \Pi \out{s'_1} \Par g(s'_2,q)$ and
+%%   \req{gs-input-shape-o}.
+%% \end{proof}
+
+
+
+\begin{lemma}
+  \label{lem:gs-visible-action}
+  For every $s \in \Actfin$,
+  if $\gen{s}{q} \st{ \mu } o$
+  then either
+  \begin{enumerate}[(a)]
+  \item $q \st{\mu} q'$, $s \in \Names^\star$, and $o = \mailbox{ \Pi \co{s}} \Par q'$, or
+  \item
+    $s = \traceA. \out{\mu}. \traceB$ for some $\traceA \in \Names^{\star}$ and $\traceB \in \Actfin$,
+    and $o \equiv \mailbox{ \Pi \co{\traceA} } \Par \gen{\traceB}{q}$,
+    and
+    \begin{enumerate}[(i)]
+    \item $\mu \in \Names$ implies $\gen{s}{q} \equiv \mailbox{ \Pi \co{\traceA} } \Par (\tau.\Unit \extc \mu.\gen{\traceB}{q})$,
+    \item $\mu \in \out{\Names}$ implies $\gen{s}{q} \equiv \mailbox{ \Pi \co{\traceA} \Par \mu } \Par (\tau.\Unit \extc \mu.\gen{\traceB}{q})$.
+    \end{enumerate}
+  \end{enumerate}
+\end{lemma}
+\begin{proof}
+  The proof is by induction on $s$.
+
+
+  In the case, $s = \varepsilon$, and hence
+  by definition $\gen{s}{q} = q$. The
+  hypotheses $\gen{s}{q} \st{ \mu } o$ implies
+  $q \st{\mu} o$, and $o \equiv \Nil \Par o \equiv \Pi{ \varepsilon } \Par o$.
+
+
+  In the inductive case, $s = \nu . s'$.
+  We have two cases, depending on whether $\nu$ is an output action
+  or an input action.
+
+
+  Suppose $\nu$ is an output. In this case
+  $\gen{s}{q} = \tau.\Unit \extc \co{\nu}.\gen{s'}{q}$.
+  The hypothesis $\gen{s}{q} \st{ \mu } o$ ensures that $\out{\nu} = \mu$,
+  thus $\mu$ is an input action.
+  By letting $\traceA = \varepsilon$ and $\traceB = s'$ we obtain the required
+  $$
+  \gen{s}{q} = \tau.\Unit \extc \mu.\gen{\traceB}{q} \equiv \Pi \co{\traceA} \Par (\tau.\Unit \extc \mu.\gen{\traceB}{q})
+  $$
+  and $ o \equiv \Pi \co{\traceA} \Par \gen{\traceB}{q}$.
+
+
+
+  Now suppose that $\nu$ is an input action.
+  By definition
+  \begin{equation}
+    \label{eq:gs-action-shape-gensq}
+    \gen{s}{q} = \out{\nu} \Par \gen{s'}{q}
+  \end{equation}
+  and the inductive hypothesis ensures that either
+  \begin{enumerate}[(1)]
+  \item\label{pt:gs-input-1} $q \st{\mu} q'$, $s' \in \Names^\star$, and $o' = \Pi \co{s'} \Par q'$, or
+  \item\label{pt:gs-input-2} $s' =  s'_1 .\out{\mu}. s'_2$, for some $s'_1 \in \Names^{\star} $ and $\traceB \in \Actfin$, and
+    \begin{equation}
+      \label{eq:gs-input-shape-o'}
+      o' \equiv  \Pi \out{s'_1} \Par \gen{s'_2}{q}
+    \end{equation}
+    and
+\begin{align}
+%    \begin{equation}
+      \label{eq:gs-input-shape-gs'}
+      \mu \in \Names &\text{ implies }\gen{s'}{q}  \equiv  \Pi \out{s'_1} \Par (\tau.\Unit \extc \mu.\gen{s'_2}{q})\\
+    %% \end{equation}
+    %% else
+    %% \begin{equation}
+      \label{eq:gs-input-shape-gs'-out}
+      \mu \in \co{\Names} &\text{ implies } \gen{s'}{q}  \equiv  \Pi \out{s'_1} \Par \mu \Par (\tau.\Unit \extc \mu.\gen{s'_2}{q})
+%    \end{equation}
+\end{align}
+  \end{enumerate}
+  The action $\mu$ is either an input or an  output, and we organise the proof accorrdingly.
+
+
+  Suppose $\mu$ is an input. Since $ \out{\nu}$ is an output, the transition
+  $\gen{s}{q} \st{ \mu } o$ must be due to a transition $\gen{s'}{q} \st{\mu} o'$,
+  thus \req{gs-action-shape-gensq} implies
+  \begin{equation}
+    \label{eq:gs-input-shape-o}
+    o = \out{\nu} \Par o'
+  \end{equation}
+
+
+  In case \ref{pt:gs-input-1},
+ then $s' \in \Names^\star$ and $\nu \in \Names$
+  ensure $s \in \Names^\star$ and the equality
+  $o \equiv \Pi \co{s} \Par q'$ follows from $ o' = \Pi \co{s'} \Par q' $
+  and \req{gs-input-shape-o}.
+ %% since $\nu$ is an input we know $s \in \Names^\star$,
+ %%  and \req{gs-input-shape-o} implies $ o = \Pi \co{s} \Par q'$, thus we are done.
+
+  In case \ref{pt:gs-input-2}, let $\traceA = \nu.s'_1 $, $\traceB = s'_2$.
+  Since $\nu$ is an input we have $ \traceA \in \Names^{\star}$.
+  The equalities $s = \nu.s'$  and $ s' =  s'_1 . \out{\mu} . s'_2$
+  imply that $s = \traceA \out{\mu} \traceB$.
+  The required $ o \equiv \Pi \out{\traceA} \Par g(s'_2,q)$
+  follows from $o' \equiv \Pi \out{s'_1} \Par g(s'_2,q)$ and
+  \req{gs-input-shape-o}.
+
+
+  Now we proceed as follows,
+  $$
+  \begin{array}{lllr}
+    \gen{s}{q} & = & \out{\nu} \Par \gen{s'}{q} &\text{By }\req{gs-action-shape-gensq} \\
+    & \equiv & \out{\nu} \Par (\Pi \out{s'_1} \Par (\tau.\Unit \extc \mu.g(s'_2,q)))&\text{By } \req{gs-input-shape-gs'} \\
+    & \equiv &
+    (\out{\nu} \Par \Pi \out{s'_1}) \Par (\tau.\Unit \extc \mu.g(s'_2,q))
+    & \text{Associativity}\\
+    & \equiv & \Pi \out{\traceA} \Par (\tau.\Unit \extc \mu.g(s'_2,q)) & \text{Because } \traceA = \nu.s'_1 \\
+    & \equiv & \Pi \out{\traceA} \Par (\tau.\Unit \extc \mu.q(\traceB,q)) & \text{Because } \traceB = s'_2 \\
+  \end{array}
+  $$
+
+  Now suppose that $\mu$ is an output.
+  Then either $\co{\nu} = \mu$ or $\co{\nu} \neq \mu$.
+
+  In the first case we let $\traceA = \varepsilon$ and $\traceB = s'$.
+  \req{gs-action-shape-gensq} and $ \co{\nu} = \mu $ imply
+  $\gen{s}{q} = \mu \Par \gen{\traceB}{q}$ from which we obtain the required
+  $\gen{s}{q} \equiv \Pi \out{\traceA} \Par \mu \Par \gen{\traceB}{q} $,
+  and $o \equiv  \Pi \out{\traceA} \Par \gen{\traceB}{q}$.
+
+
+  If $\co{\nu} \neq \mu$ then \req{gs-action-shape-gensq}
+  ensures that  the transition $\gen{s}{q} \st{ \mu } o $
+  must be due to $\gen{s'}{q} \st{ \mu } o'$ and \req{gs-input-shape-o} holds.
+  We use the inductive hypothesis.
+
+  If \ref{pt:gs-input-1} is true, we proceed as already discussed.
+%% then $s' \in \Names^\star$ and $\nu \in \Names$
+%%   ensure $s \in \Names^\star$ and the equality
+%%   $o \equiv \Pi \co{s} \Par q'$ follows from $ o' = \Pi \co{s'} \Par q' $
+%%   and \req{gs-input-shape-o}.
+  In case \ref{pt:gs-input-2} holds, let $\traceA =  \nu. s'_1$, we have that $\traceA \in \Names^{\star}$.
+  Let $\traceB = s'_2$, now we have that
+  $$
+  \begin{array}{lllr}
+    \gen{s}{q} & = & \out{\nu} \Par \gen{s'}{q} &\text{By }\req{gs-action-shape-gensq} \\
+    & \equiv & \out{\nu} \Par (\Pi \out{s'_1} \Par \mu \Par g(s'_2,q)) & \text{By }\req{gs-input-shape-gs'-out} \\
+    & \equiv & (\out{\nu} \Par \Pi \out{s'_1}) \Par \mu \Par g(s'_2,q) &\text{Associativity}\\
+    %    & = &  \Pi \out{ \nu s\traceA} \mu \Par c(s\traceB) \\
+    & = &  \Pi \out{ \traceA } \Par \mu \Par g(s'_2,q) & \text{Because }\traceA =  \nu. s'_1\\
+    & = &  \Pi \out{ \traceA } \Par \mu \Par \gen{\traceB}{q} & \text{Because }\traceB =  s'_2\\
+  \end{array}
+$$
+\end{proof}
+
+
+
+
+\begin{lemma}%[\coqMT{inversion_gen_test_mu}]
+  \label{lem:inversion-gen-accs-mu}
+  For every $s \in \Actfin$,
+  if $\gen{s}{q} \st{ \mu } p$
+  then either:
+  \begin{enumerate}[(a)]
+  \item\label{pt:inversion-gen-accs-mu-left}
+    there exists $q'$ such that $q \st{\mu} q'$, $s \in \Names^\star$ with $p \equiv \Pi \co{s} \Par q'$, or
+  \item\label{pt:inversion-gen-accs-mu-right}
+    $s = \traceA. \out{\mu}. \traceB$ for some $\traceA \in \Names^{\star}$ and $\traceB \in \Actfin$
+    with $p \equiv \gen{\traceA.\traceB}{q}$.
+  \end{enumerate}
+\end{lemma}
+\begin{proof}
+The proof is by induction over the sequence $s$.
+
+In the base case $s = \varepsilon$ and we have $\gen{\varepsilon}{q} = q$.
+We show \rpt{inversion-gen-accs-mu-left} and choose $q' = p$.
+We have $\gen{\varepsilon}{q} = q \st{\mu} p$,
+$p \equiv \Pi \co{\varepsilon} \Par q'$ and $\varepsilon \in \Names^\star$
+as required.
+
+In the inductive case $s = \nu.s'$.
+We proceed by case-analysis on $\nu$.
+If $\nu$ is an input, then $g (\nu.s', q) = \co{\nu} \Par g (s', q)$.
+The hypothesis $g (\nu.s', q) \st{\mu} p$ implies that either:
+\begin{enumerate}[(i)]
+\item $\co{\nu} \st{\mu} \Nil$ with $p = \Nil \Par g (s', q)$ and $\co{\nu} = \mu$, or
+\item $g (s', q) \st{\mu} \hat{p}$ with $p = \co{\nu} \Par \hat{p}$.
+\end{enumerate}
+
+In the first case we show \rpt{inversion-gen-accs-mu-right}.
+We choose $\traceA = \varepsilon$, $\traceB = s'$.
+We have $s = \mu.s' = \co{\nu}.s'$, $p = \Nil \Par g (s', q) \equiv g (\varepsilon.s', q)$
+and $\varepsilon \in \Names^\star$ as required.
+
+In the second case the inductive the hypothesis tells us that either:
+\begin{enumerate}[(H-a)]
+\item\label{pt:inversion-gen-accs-mu-left-IH}
+  there exists $q'$ such that $q \st{\mu} q'$, $s' \in \Names^\star$
+  with $\hat{p} \equiv \Pi \co{s'} \Par q'$, or
+\item\label{pt:inversion-gen-accs-mu-right-IH}
+  $s = \traceA. \out{\mu}. \traceB$ for some $\traceA \in \Names^{\star}$ and $\traceB \in \Actfin$
+  with $\hat{p} \equiv \gen{\traceA.\traceB}{q}$.
+\end{enumerate}
+\rpt{inversion-gen-accs-mu-left-IH} or \rpt{inversion-gen-accs-mu-right-IH} is true.
+
+If \rpt{inversion-gen-accs-mu-left-IH} is true then
+$s' \in \Names^\star$ and there exists $q''$ such that $q \st{\mu}
+q''$ with $\hat{p} \equiv \Pi \co{s'} \Par q''$.
+We prove \rpt{inversion-gen-accs-mu-left}. We choose $q' = q''$ and $s = \nu.s'$.
+We have $p \equiv \co{\nu} \Par \hat{p} \equiv \co{\nu} \Par \Pi
+\co{s'} \Par q'' \equiv \Pi \co{\nu.s'} \Par q''$ and $\nu.s' \in
+\Names^\star$ as required.
+
+If \rpt{inversion-gen-accs-mu-right-IH} is true then
+$s' = s'_1. \out{\mu}. s'_2$ for some $s'_1 \in \Names^{\star}$ and $s'_2 \in \Actfin$
+with $\hat{p} \equiv \gen{s'_1.s'_2}{q}$.
+We prove \rpt{inversion-gen-accs-mu-left}.
+We choose $\traceA = \nu.s'_1$ and $\traceB = s'_2$.
+We have $p \equiv \co{\nu} \Par \hat{p} \equiv \co{\nu} \Par
+\gen{s'_1.s'_2}{q} \equiv \gen{\nu.s'_1.s'_2}{q}$ as required.
+
+
+If $\nu$ is an output, then $g (\nu.s', q) = \co{\nu}.(g (s', q)) \extc \tau.\Unit$.
+We prove \rpt{inversion-gen-accs-mu-right} and choose $\traceA = \varepsilon$, $\traceB = s'$.
+The hypothesis $g (\nu.s', q) \st{\mu} p$ implies that $\mu = \co{\nu}$ and
+$p \equiv g (s', q) \equiv g (\varepsilon.s', q)$ as required.
+\end{proof}
+
+
+\begin{lemma}
+  \label{lem:gs-tau}
+  For every $s \in \Actfin$,
+  if $\gen{s}{q} \st{ \tau } o$
+  then either
+  \begin{enumerate}[(a)]
+  \item\label{pt:gs-tau-1} $ \good{o}$, or
+  \item\label{pt:gs-tau-2} $s \in \Names^\star$, $q \st{\tau} q'$, and $o = \Pi \co{s} \Par q'$, or
+  \item\label{pt:gs-tau-3} $s \in \Names^\star$, $q \st{\nu} q'$, and $s =  \traceA . \nu . \traceB$, and $o \equiv \Pi \co{\traceA.\traceB} \Par q'$ , or
+  \item\label{pt:gs-tau-4} $o \equiv \gen{\traceA.\traceB.\traceC}{q}$ where $ s = \traceA . \mu . \traceB . \co{\mu} . \traceC$ with $ \traceA . \mu  . \traceB \in \Names^\star$.
+  \end{enumerate}
+\end{lemma}
+\begin{proof}
+  By induction on the structure of $s$.
+
+  In the base case $s = \varepsilon$. We prove \ref{pt:gs-tau-2}.
+  Trivially $s \in \Names^\star$, and by definition $\gen{\varepsilon}{q} = q$,
+  the hypothesis implies therefore that $q \st{\tau} o$. The $q'$ we are after is $o$ itself,
+  for $o \equiv \Nil \Par o =\Pi \co{s} \Par o$.
+
+
+  In the  inductive case $s = \nu.s'$. We proceed by case analysis on
+  whether $\nu \in \co{\Names}$ or $\nu \in \Names$.
+
+  If $\nu$ is an output, by definition $ \gen{s}{q} = \tau.\Unit \extc \co{\nu}.gen{s'}{q}$.
+  Since $\co{\nu}.\gen{s'}{q} \stable$, the silent move $ \gen{s}{q} \st{\tau} o $
+  is due to rule \extL, thus $o = \Unit \extc\co{\nu}.\gen{s'}{q}$, and thus $\good{o}$.
+  We have proven \ref{pt:gs-tau-1}.
+
+
+
+  Suppose now that $\nu$ is an input, by definition
+  \begin{equation}
+    \label{eq:gs-tqu-shape-test}
+    \gen{s}{q} = \co{\nu} \Par \gen{s'}{q}
+  \end{equation}
+  The silent move  $ \gen{s}{q} \st{\tau} o $ must have been derived via the rule \com,
+  or the rule \parR.
+
+
+
+  If \com was employed we know that
+  $$
+  \begin{prooftree}
+    \co{\nu} \st{ \out{\nu} } \Nil
+    \quad
+    \begin{prooftree}
+      \vdots
+      \justifies
+      \gen{s'}{q} \st{ \nu } o'
+    \end{prooftree}
+    \justifies
+    \co{\nu} \Par \gen{s'}{q} \st{\tau} \Nil \Par o'
+  \end{prooftree}
+  $$
+  and thus $o \equiv o'$.
+  Since $\nu$ is an input and $\gen{s'}{q} \st{ \nu } o'$,
+  \rlem{gs-visible-action} ensures that either
+  \begin{enumerate}[(1)]
+  \item\label{pt:gs-input-aux-1} $q \st{\nu} q'$, $s' \in \Names^\star$, and $o' = \Pi \co{s'} \Par q'$, or
+  \item\label{pt:gs-input-aux-2}
+    $s' = s'_1. \out{\nu}. s'_2$ for some $s'_1 \in \Names^{\star}$ and $s'_2 \in \Actfin$,
+    and
+    \begin{align}
+      o' & \equiv \mailbox{ \Pi \co{s'_1} } \Par \gen{s'_2}{q}\\
+      \gen{s}{q} & \equiv \mailbox{ \Pi \co{s'_1}}  \Par (\tau.\Unit \extc \nu.\gen{s'_2}{q})
+    \end{align}
+  \end{enumerate}
+
+  In case \ref{pt:gs-input-aux-1} we prove \rpt{gs-tau-3}.
+  Since $\nu$ is an input, $s' \in \Names^\star$ ensures that $s \in \Names^\star$.
+  By letting $\traceA = \varepsilon$ and $\traceB = s'$ we obtain $s = \traceA.\nu.\traceB$.
+  We have to explain why $o \equiv \mailbox{ \Pi \co{\traceA.\traceB} } \Par q'$.
+  This follows from the definitions of $\traceA$ and $\traceB$, from
+  $o \equiv \Nil \Par o' $ and from $o' \equiv  \mailbox{ \Pi \co{s'}} \Par q'$.
+
+
+  In case \ref{pt:gs-input-aux-2} we prove \rpt{gs-tau-4}.
+  Let $\traceA = \varepsilon$, $\traceB =  s'_1$ and $\traceC =  s'_2$.
+  $$
+  \begin{array}{lllr}
+    s' & = & \nu s'_1 . \co{\nu} . s'_2  & \text{By inductive hypothesis}\\
+    \nu.s' & = & \nu .s'_1 . \co{\nu} . s'_2  \\
+    s & = & \nu .s'_1 . \co{\nu} . s'_2  & \text{Because } s = \nu.s'\\
+    s & = & \traceA . \nu .\traceB . \co{\nu} . \traceC  & \text{By definition}
+  \end{array}
+  $$
+  and $ \traceA . \nu .\traceB \in \Names^\star$ as required.
+  Moreover $o' = \mailbox{ \Pi \co{s'_1} } \Par \gen{s'_2}{q} =  \mailbox{ \Pi \co{\traceB} } \Par \gen{\traceC}{q} = \gen{\traceB.\traceC}{q} = \gen{\traceA.\traceB.\traceC}{q}$
+  as required. This concludes the argument due to an applicaton of \com.
+
+
+
+
+  If \parR was employed we know that
+  $$
+  \begin{prooftree}
+    \begin{prooftree}
+      \vdots
+      \justifies
+       \gen{s'}{q} \st{ \tau } o'
+    \end{prooftree}
+    \justifies
+    \co{\nu} \Par \gen{s'}{q} \st{\tau} \co{\nu} \Par o'
+  \end{prooftree}
+  $$
+  thus $     \gen{s'}{q} \st{ \tau } o'$ and
+  \begin{equation}
+    \label{eq:gs-tau-shape-o}
+    o = \mailbox{ \co{\nu} } \Par o'
+  \end{equation}
+
+  Since $s'$ is smaller than $s$, thanks to $\gen{s'}{q} \st{ \tau } o'$ we apply the inductive hypothesis
+  to obtain either
+  \begin{enumerate}[(i)]
+  \item\label{pt:ih-gs-tau-1} $ \good{o'}$, or
+  \item\label{pt:ih-gs-tau-2} $s' \in \Names^\star$, $q \st{\tau} q'$, and $o' = \mailbox{ \Pi \co{s'} } \Par q'$, or
+  \item\label{pt:ih-gs-tau-3} $s' \in \Names^\star$, $q \st{\mu} q'$, and $s' =  s'_1 . \mu . s'_2$, or
+  \item\label{pt:ih-gs-tau-4} $o' \equiv \gen{s'_1.s'_2.s'_3}{q}$ where $ s' = s'_1 . \mu . s'_2 . \co{\mu} . s'_3$ with $ s'_1 . \mu  . \traceB' \in \Names^\star$,
+  \end{enumerate}
+
+
+  If \ref{pt:ih-gs-tau-1} then \req{gs-tau-shape-o} implies \ref{pt:gs-tau-1}.
+  If \ref{pt:ih-gs-tau-2} then $s = \nu.s' $ and the assumption that $\nu$ is input
+  imply that $s \in \Names^\star$. \req{gs-tau-shape-o} and $o' = \mailbox{ \Pi \co{s'}} \Par q'$
+  imply that $o = \Pi \co{s} \Par q'$. We have proven \ref{pt:gs-tau-2}.
+  If \ref{pt:ih-gs-tau-2} we prove \ref{pt:gs-tau-2}, because
+  $ s' \in \Names^\star$ ensures $s \in \Names^\star$ and $s' = s'_1 . \mu . s'_2$
+  let use prove $s = \traceA . \nu . \traceB$ by letting $\traceA = \nu.s'_1$ and $\traceB = s'_2$.
+
+  If \ref{pt:ih-gs-tau-4} we prove \ref{pt:gs-tau-4}.
+  We have $o' \equiv \gen{s'_1.s'_2.s'_3}{q}$
+  and $s' = s'_1 . \lambda . s'_2 . \out{\lambda} .s'_3$
+  with $s'_1 . \lambda . s'_2 \in \Names^{\star}$.
+
+  Let $\traceA = \nu . s'_1 $, $\traceB =  s'_2$ and $\traceC = s'_3$.
+  Since  $ s'_1 . \mu  . \traceB' \in \Names^\star$, we have $\traceA . \mu  . \traceB \in \Names^\star$.
+  We also have
+  $$
+  \begin{array}{lllr}
+    s' & = & s'_1 . \mu . s'_2 . \co{\mu} . s'_3 & \text{By inductive hypothesis}\\
+    \nu.s' & = & \nu.s'_1 . \mu . s'_2 . \co{\mu} . s'_3 \\
+    s & = & \nu.s'_1 . \mu . s'_2 . \co{\mu} . s'_3 & \text{Because } s = \nu.s'\\
+    s & = & \traceA . \mu . \traceB . \co{\mu} . \traceC & \text{By definition }
+  \end{array}
+  $$
+  It remains to prove that $o \equiv \gen{\traceA.\traceB.\traceC}{q}$.
+  This is a consequence of \req{gs-tau-shape-o}, of
+  $o' \equiv \gen{s'_1.s'_2.s'_3}{q}$, and of the definitions of $\traceA, \traceB,$ and $\traceC$.
+\end{proof}
+
+
+
+
+%% \begin{lemma}
+%%   \label{lem:gs-reduces}
+%%   If $q \st{\tau}$ then for every $s \in \Actfin . \gen{s}{q} \st{\tau}$
+%% \end{lemma}
+%% \begin{proof}
+%%   By induction on $s$.
+%%   In the base case we use the equality
+%%   $g\gen{\varepsilon}{q} = q$ and the hypothesis.
+%%   In the inductive case $s = \mu . s'$.
+%%   If $\mu \in \out{\Names}$, then $\gen{s}{q} = \tau.\Unit \extc \co{\mu}.\gen{s'}{q} \st{ \tau } \Unit \extc \co{\mu}.\gen{s'}{q}$.
+%%   If $\mu \in \Names$, then $\gen{s}{q} = \co{\mu} \Par \gen{s'}{q}$ and the inductive hypothesis ensures that $\gen{s'}{q} \st{\tau}$, thus $\gen{s}{q} \st{\tau}$.
+%% \end{proof}
+
+
+
+
+
+
+\begin{lemma}
+\label{lem:stable-derivative-gs-happy}
+For every $s \in \Actfin$, and process $q$
+such that or $q \st{\tau} q'$ implies $\good{q'}$,
+and for every $\mu \in \Names. q \st{\mu} q'$ implies $\good{q'}$,
+if $\gen{s}{q} = o_0 \st{\tau} o_1 \st{\tau} o_2 \st{\tau} \ldots o_n \stable$ and $n > 0$ then $\good{o_i}$ for some $i \in [1,n]$.
+\end{lemma}
+\begin{proof}
+  \rlem{gs-tau} implies that one of the following is true,
+  \begin{enumerate}[(a)]
+  \item\label{pt:gstau-1} $\good{o_1}$, or
+  \item\label{pt:gstau-2} $s \in \Names^\star$, $q \st{\tau} q'$, and $o_1 = \mailbox{ \Pi \co{s} } \Par q'$, or
+  \item\label{pt:gstau-3} $s \in \Names^\star$, $q \st{\mu} q'$, and $s =  \traceA . \mu . \traceB$, and $o_1 \equiv \Pi \mailbox{ \co{\traceA.\traceB} } \Par q'$ , or
+  \item\label{pt:gstau-4} $o_1 \equiv \gen{\traceA.\traceB.\traceC}{q}$ where $ s = \traceA . \mu . \traceB . \co{\mu} . \traceC$ with $ \traceA . \mu  . \traceB \in \Names$.
+  \end{enumerate}
+  If \ref{pt:gstau-1} we are done.
+  If \ref{pt:gstau-2} or \ref{pt:gstau-3} then $\good{q'}$, and thus $\good{o_1}$.
+
+  In the base case $\len{s} = 0$, thus \ref{pt:gstau-4} is false. It follows that $\good{o_1}$.
+
+  In the inductive case $s = \nu . s'$.
+  We have to discuss only the case in which \ref{pt:gstau-4} is true.
+  The inductive hypothesis ensures that
+  \begin{center}
+    For every $s' \in \bigcup_{i = 0}^{\len{s}-1}$, if $\gen{s'}{q} \st{\tau} o'_1 \st{\tau} o'_2 \st{\tau} \ldots o'_m \stable$ and $m > 0$
+    then $\good{o'_j}$ for some $j$.
+  \end{center}
+  Note that $ o_1 \st{\tau} $ so the reduction sequence $o_1 \wt{} o_n$ cannot be empty, thus $ m > 0$. This and  $\len{\traceA\traceB\traceC} < \len{s}$
+  let us apply the inductive hypothesis to state that
+  $$
+  \gen{\traceA.\traceB.\traceC}{q} \st{\tau} o'_1 \st{\tau} o'_2 \st{\tau} \ldots o'_m \stable
+  \text{ implies } o'_j \text{ for some } j.
+  $$
+  We conclude the argument via \rlem{st-compatible-with-equiv} and because $\equiv$ preserves success.
+\end{proof}
+
+
+
+\begin{lemma}
+  \label{lem:gs-stable}
+  For every $s \in \Actfin$ and process $q$, if $\gen{s}{q} \stable$ then
+  \begin{enumerate}
+  \item $ s \in \Names^\star $,
+  \item $ q \stable $,
+  \item $I(q) \cap \co{s} = \emptyset $,
+  \item $R(\gen{s}{q}) = \co{s} \cup R(q)$.
+  \end{enumerate}
+\end{lemma}
+\begin{proof}
+  By induction on $s$.
+  In the base case $\varepsilon \in \Names^\star$,
+  and $\gen{ \varepsilon }{q} = q$,
+  thus $q \stable$. The last two points follow from
+  this equality and from $\varepsilon$ containing no actions.
+
+  In the inductive case $s = \mu . s'$.
+  The hypothesis $\gen{\mu . s'}{q} \stable$ and the definition
+  of $g$ imply that $\gen{\mu . s'}{q} = \co{\mu} \Par \gen{s'}{q}$,
+  thus $\mu \in \Names$. The inductive hypothesis ensures that
+  \begin{enumerate}
+  \item $ s' \in \Names^\star $,
+  \item $ q \stable $,
+  \item for every $I(q) \cap \co{s'} = \emptyset $,
+  \item for every $R(\gen{s'}{q}) = \co{s'} \cup R(q)$
+  \end{enumerate}
+  Since $ \co{\mu} \Par \gen{s'}{q} \stable $ rule \com
+  cannot be applied, thus $ q \Nst{\mu} $, and so
+  $I(q) \cap \co{s} = \emptyset $.
+  From $R(\gen{s'}{q}) = \co{s'} \cup R(q)$ we obtain
+  $R(\gen{s}{q}) = \co{s} \cup R(q)$.
+\end{proof}
+
+\begin{lemma}%[\coqMT{gen_test_lts_mu}]
+  \label{lem:gen-test-lts-co-mu}
+  For every $\mu \in \Act$, $s$ and $p$, $g(\mu.s, p) \st{\co{\mu}} g(s,p)$.
+\end{lemma}
+\begin{proof}
+We proceed by case-analysis on $\mu$.
+If $\mu$ is an input then $g(\mu.s, p) = \co{\mu} \Par g(s, p)$.
+We have $\mailbox{ \co{\mu} } \Par g(s, p) \st{\co{\mu}} \Nil \Par g(s, p) \equiv g(s, p)$
+as required.
+If $\mu$ is an output then $g(\mu.s, p) = \co{\mu}.g(s, p) \extc \tau.\Unit$.
+We have $\co{\mu}.g(s, p) \extc \tau.\Unit \st{\co{\mu}} g(s, p)$ as required.
+\end{proof}
+
+
+
+
+
+\begin{lemma}%[\coqMT{inversion_gen_conv_tau}]
+  \label{lem:inversion-feeder-tau-accs}
+  $\Forevery \trace \in \Actfin, \and q \in \ACCS \suchthat
+  c(s) \sta{\tau} q$ either
+  \begin{enumerate}[(a)]
+  \item\label{inversion-feeder-tau-accs-ok} $\good{q}$, or
+  \item\label{inversion-feeder-tau-accs-split}
+    there exist $\ab$, $\traceA$, $\traceB$ and $\traceC$ with
+    $\traceA.\ab.\traceB \in \Names^\star$ such that
+    $s = \traceA.\ab.\traceB.\co{\ab}.\traceC$ and
+    $q \equiv c(\traceA.\traceB.\traceC)$.
+    \end{enumerate}
+\end{lemma}
+\begin{proof}
+The proof is by induction on $s$.
+
+In the base case $s = \varepsilon$, $c(\varepsilon) = \tau.\Unit$ and then
+$q = \Unit$. We prove \ref{inversion-feeder-tau-accs-ok} with $\good{\Unit}$.
+
+In the inductive case $s = \mu.s'$.
+We proceed by case-analysis over $\mu$.
+
+If $\mu$ is an input then $c(\mu.s') = \co{\mu} \Par c(s')$.
+We continue by case-analysis over the reduction $\co{\mu} \Par c(s') \st{\tau} q$.
+It is either due to:
+\begin{enumerate}[(i)]
+\item\label{inversion-feeder-tau-accs-input-com}
+  a communication between $\co{\mu}$ and $c(s')$ such that
+  $\co{\mu} \st{\co{\mu}} \Nil$ and $c(s') \st{\mu} q'$ with $q = \Nil \Par q'$, or
+\item\label{inversion-feeder-tau-accs-input-tau}
+  a reduction of $c(s')$ such that $c(s') \st{\tau} q'$ with $q = \co{\mu} \Par q'$.
+\end{enumerate}
+If \ref{inversion-feeder-tau-accs-input-com} is true then
+%\rcor{inversion-feeder-mu}
+\rlem{inversion-gen-accs-mu} tells us that
+there exist $s'_1$ and $s'_2$ such that
+$s' = s'_1.\co{\mu}.s'_2$ and $q' \equiv c(s'_1.s'_2)$ with $s'_1 \in \Names^*$.
+We prove (\ref{inversion-feeder-tau-accs-split}).
+We choose $\ab = \mu$, $\traceA = \varepsilon$, $\traceB = s'_1$, $\traceC = s'_2$.
+We show the first requirement by
+$s = \mu.s' = \mu.s'_1.\co{\mu}.s'_2 = \varepsilon.\mu.s'_1.\co{\mu}.s'_2 = \traceA.\ab.\traceB.\co{\ab}.\traceC$.
+The second requirement is $q = \Nil \Par q' \equiv c(s'_1.s'_2) = c(\varepsilon.s'_1.s'_2) = c(\traceA.\traceB.\traceC)$.
+
+We now consider the case (\ref{inversion-feeder-tau-accs-input-tau}).
+The inductive hypothesis tells us that either:
+\begin{enumerate}%[(H-a)]
+\item\label{inversion-feeder-tau-accs-ok-IH} $\good{q'}$, or
+\item\label{inversion-feeder-tau-accs-split-IH} there exist $\iota$, $s'_1$, $s'_2$ and $s'_3$ with
+  $s'_1.\iota.s'_2 \in \Names^*$ such that
+  $s' = s'_1.\iota.s'_2.\co{\iota}.s'_3$ and
+  $q' \equiv c(s'_1.s'_2.s'_3)$.
+\end{enumerate}
+If (\ref{inversion-feeder-tau-accs-ok-IH}) is true then
+we prove \ref{inversion-feeder-tau-accs-ok} with
+$q = \mailbox{ \co{\mu} } \Par q'$ and $\mailbox{ \co{\mu} }\Par q'$ and $ \good{q'}$.
+If (\ref{inversion-feeder-tau-accs-split-IH}) is true then
+we prove (\ref{inversion-feeder-tau-accs-split}).
+We choose  $\ab = \iota$, $\traceA = \mu.s'_1$, $\traceB = s'_2$, $\traceC = s'_3$.
+We show the first requirement with
+$s = \mu.s' = \mu.s'_1.\iota.s'_2.\co{\iota}.s'_3 = \traceA.\ab.\traceB.\co{\ab}.\traceC$.
+The second requirement is $q = \mailbox{ \co{\mu} } \Par q' \equiv \mailbox{ \co{\mu} } \Par c(s'_1.s'_2.s'_3) = c(\mu.s'_1.s'_2.s'_3) = c(\traceA.\traceB.\traceC)$.
+
+If $\mu$ is an output then $c(\mu.s') = \co{\mu}.(c s') \extc \tau.\Unit$.
+The hypothesis $c(\mu.s') \st{\tau} q$ implies $q = \Unit$.
+We prove (\ref{inversion-feeder-tau-accs-ok}) with $\good{\Unit}$.
+\end{proof}
+
+
+%%%%%%%%% OMITTED (Ilaria 23/1/24) %%%%%%%%%%%%%%%
+
+% \clearpage
+
+% \subsection{Example on Workers}
+
+% \newcommand{\EndW}{{\tt end}}
+% \newcommand{\bye}{{\tt bye}}
+% \newcommand{\work}{{\tt work}}
+% \newcommand{\data}{{\tt data}}
+% \newcommand{\uw}{{\tt UnrealiableW}}
+% \newcommand{\rw}{{\tt RealiableW}}
+
+% Let
+% \begin{align}
+%   \uw = & \rec{ ( \co{\EndW} \intc \data . ( (\co{work} \Par x) \intc \co{\bye} )) } \\
+%   \rw = & \rec{ ( \co{\EndW} \intc \data . ( \co{work} \Par x )) }
+% \end{align}
+
+
+% \begin{lemma}
+%   \label{lem:auxiliary-use-case-workers}
+%   For every $\genlts_A$ and $\genlts_B$ of \obaFB,
+%   and $\serverA \in A$ and $\serverB \in B$, we have that
+%   \begin{enumerate}
+%     %\item $ \tau.\serverA \testeqS \serverA$
+%   \item $ \serverA \testleqS \tau.\serverA $
+%   \item $ \serverA \testleqS \serverB $ if and only if $\forall \aa \in\Names. a.\serverA  \testleqS a.\serverB $
+%   \item $ \serverA \intc \serverB  \testeqS \serverB \intc \serverA$
+%   \item $ \serverA \intc \serverB  \testleqS \serverA$
+%   \end{enumerate}
+% \end{lemma}
+
+
+% The principle of Park Induction over a set of states $\ACCS$ and functions in $ \ACCS \longrightarrow \ACCS $
+% can be phrased as
+% \begin{equation}
+%   \label{eq:park-induction}
+%   \forall \server \in \ACCS. f( \server ) \testleqS \server \text{ implies } \rec[z]{f(z)} \testleqS \server.
+% \end{equation}
+% This is true for the synchronous semantics, as shown in pag. 191 of \cite{DBLP:books/daglib/0066919}.
+
+
+% \begin{example}
+%   To show that $ \uw \testleqS \rw $, a proof by compositionality does not work
+%   out of box.
+%   In fact an attempt to such a proof shows that either coinductive reasoning or
+%   Park Induction are in order.
+
+
+%   If we use Park induction, \ie \req{park-induction}, then the result follows from
+%   $$
+%   \co{\EndW} \intc \data . ( (\co{\work} \Par \rw ) \intc \co{\bye} )
+%   \testleqS
+%   \rw
+%   $$
+%   which reduces to
+%   $$
+%   \co{\EndW} \intc \data . ( (\co{\work} \Par \rw ) \intc \co{\bye} )
+%   \testleqS
+%   \co{\EndW} \intc \data . (\co{\work} \Par \rw )
+%   $$
+%   that in turn follows from
+%   $$
+%   (\co{\work} \Par \rw ) \intc \co{\bye} \testleqS (\co{\work} \Par \rw )
+%   $$
+%   which is true by reflexivity.
+
+
+
+%   To make a case for co-inductive reasoning observe that
+%   thanks to the previous lemma, it is enough to prove that
+%   $$
+%   \co{\EndW} \intc \data . ( (\co{\work} \Par \uw) \intc \co{\bye} )
+%   \testleqS
+%    \co{\EndW} \intc \data . ( \co{\work} \Par \rw )
+%    $$
+%   and again thanks to the previous lemma it suffices to show
+%   that
+%   $$
+%   \co{\EndW} \testleqS \co{\EndW}
+%   $$
+%   which is true by reflexivity, and that
+%   $$
+%   \data . ( (\co{\work} \Par \uw) \intc \co{\bye} ) \testleqS \data. ( \co{\work} \Par \rw )
+%   $$
+%   Now it suffices to show that
+%   $$
+%   (\co{\work} \Par \uw) \testleqS \co{\work} \Par \rw
+%   $$
+%   So we are back at square one, for we need to prove $ \uw \testleqS \rw $.
+% \end{example}
+
+
+% %%%%%%%% END OMITTED PART %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
