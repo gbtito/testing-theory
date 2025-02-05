@@ -64,7 +64,6 @@ Proof.
   etrans. eassumption. now symmetry.
 Qed.
 
-
 Lemma woutpout_delay_inp `{LtsOba A L} {p q m t a} : strip p m q -> p ⟶[ActIn a] t -> exists r, q ⟶[ActIn a] r.
 Proof.
   intros. revert t H3.

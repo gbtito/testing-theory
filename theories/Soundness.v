@@ -264,7 +264,7 @@ Qed.
 
 Lemma wt_nil_mx
   `{Lts A L, !FiniteLts A L, !Lts B L, !LtsEq B L, !Good B L good}
-  : forall p1 p2 e, mustx {[ p1 ]} e -> p1 ⟹ p2 -> mustx {[p2]} e.
+  : forall p1 p2 e, mustx {[ p1 ]} e -> p1 ⟹ p2 -> mustx {[ p2 ]} e.
 Proof.
   intros p1 p2 e hmx wt.
   dependent induction wt; subst; eauto with mdb.

@@ -32,7 +32,8 @@ Require Import Coq.Logic.JMeq.
 Require Import Coq.Program.Wf Setoid.
 Require Import Coq.Program.Equality.
 From Coq.Logic Require Import ProofIrrelevance.
-From stdpp Require Import base countable finite gmap list finite base decidable finite gmap.
+
+From stdpp Require Import base countable list decidable finite gmap.
 
 Lemma sig_eq {A} (P : A → Prop) (x y : sig P) :
   proj1_sig x = proj1_sig y → x = y.
@@ -238,8 +239,6 @@ Notation "p ↛"      := (lts_stable p τ) (at level 30, format "p  ↛").
 Notation "p ↛{ α }" := (lts_stable p α) (at level 30, format "p  ↛{ α }").
 Notation "p ↛[ μ ]" := (lts_stable p (ActExt μ)) (at level 30, format "p  ↛[ μ ]").
 
-(* Typeclass that captures LTS that
-   are finite-image and have a countable amount of states. *)
 Class FiniteLts A L `{Lts A L} :=
   MkFlts {
       folts_states_countable: Countable A;
