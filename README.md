@@ -1,6 +1,5 @@
 # testing-theory
-This repository contains the mechanisation of testing theory à la De Nicola and Hennessy
-for Selinger output-buffered agents.
+This repository contains the mechanisation of testing theory à la De Nicola and (Hennessy)[https://en.wikipedia.org/wiki/Matthew_Hennessy] for Selinger output-buffered agents.
 
 The work is lead by [Giovanni Bernardi](https://www.irif.fr/~gio/).
 
