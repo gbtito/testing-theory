@@ -10,8 +10,8 @@ At present the documentation are Appendix J and Appendix K of this ESOP 2025
 and [Léo Stefanesco](https://stefanesco.com/).
 
 30/11/2025: [Vincent Padovani](https://www.irif.fr/~padovani/) helped writing a journal version of the ESOP paper
-that contains two more examples and the entire proof of the main
-theorem has been submitted can be found [here](https://www.irif.fr/~gio/submissions/toplas-esop2025.pdf). 
+that contains two more examples and the entire proof of the main theorem.
+The pre-print is available [here](https://www.irif.fr/~gio/submissions/toplas-esop2025.pdf). 
 
 Our results are currently being developed by [Gaëtan Lopez](https://www.irif.fr/users/glopez/index),
 who is supported by a [QuantEDU](https://quantique.france2030.gouv.fr/talents/programme-de-formation/)
