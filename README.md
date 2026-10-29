@@ -9,7 +9,7 @@ The work is lead by [Giovanni Bernardi](https://www.irif.fr/~gio/).
 
 At present the documentation of the Rocq code 
 are Appendix J and Appendix K of this ESOP 2025
-[paper](https://www.irif.fr/~gio/papers/esop2025-full-report.pdf) penned with
+[paper](https://hal.science/hal-04642776) penned with
 [Ilaria Castellani](https://www-sop.inria.fr/members/Ilaria.Castellani/),
 [Paul Laforgue](https://fr.linkedin.com/in/paul-laforgue-16bb48114),
 and [Léo Stefanesco](https://stefanesco.com/).
@@ -25,7 +25,9 @@ scholarship, and is supervised jointly with [Hugo Férée](https://hugo.feree.fr
 [Roberto Amadio](https://www.irif.fr/users/amadio/index) and I co-authored 
 a book on [Operational Methods in Semantics](https://www.worldscientific.com/worldscibooks/10.1142/14882),
 which revises and expands Roberto's lecture notes.
-Chapter 26 outlines the classical proof techniques for testing preorders, and for must it uses new tests.
+Chapter 26 outlines the classical proof techniques for testing preorders, 
+and for the must-preorder it tests by Roberto that somewhat differ
+from the standard ones.
 Chapter 31 presents a new theory of may-preorder for concurrent objects.
 
 28/10/2026: [Maryline Zhang](https://www.irif.fr/users/mzhang/index), [Pedro Ribeiro](https://www.cs.york.ac.uk/people/?username=pfr),
