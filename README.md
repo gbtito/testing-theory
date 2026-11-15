@@ -26,8 +26,7 @@ scholarship, and is supervised jointly with [Hugo Férée](https://hugo.feree.fr
 a book on [Operational Methods in Semantics](https://www.worldscientific.com/worldscibooks/10.1142/14882),
 which revises and expands Roberto's lecture notes.
 Chapter 26 outlines the classical proof techniques for testing preorders, 
-and for the must-preorder it tests by Roberto that somewhat differ
-from the standard ones.
+and for the must-preorder it uses tests by Roberto that differ from the standard ones.
 Chapter 31 presents a new theory of may-preorder for concurrent objects.
 
 28/10/2026: [Maryline Zhang](https://www.irif.fr/users/mzhang/index), [Pedro Ribeiro](https://www.cs.york.ac.uk/people/?username=pfr),
